@@ -1,5 +1,5 @@
 // resources/js/Layouts/AppLayout.jsx
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
@@ -17,6 +17,10 @@ import {
     XMarkIcon,
     Bars3Icon,
     BanknotesIcon,
+} from '@heroicons/react/24/outline';
+import {
+    SunIcon,
+    MoonIcon,
 } from '@heroicons/react/24/outline';
 
 const navigationGroups = [
@@ -238,35 +242,66 @@ function SidebarContent({ isActive }) {
 }
 
 function Header({ setSidebarOpen }) {
+    const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem('theme') === 'dark';
+    });
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [darkMode]);
+
     return (
-        <header className="sticky top-0 z-30 border-b border-green-100 bg-white/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-green-100 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#123D2A]/90">
             <div className="flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
                 <button
                     type="button"
                     onClick={() => setSidebarOpen(true)}
-                    className="rounded-xl p-2 text-gray-700 hover:bg-green-50 lg:hidden"
+                    className="rounded-xl p-2 text-gray-700 hover:bg-green-50 dark:text-green-100 dark:hover:bg-white/10 lg:hidden"
                 >
                     <Bars3Icon className="h-6 w-6" />
                 </button>
 
                 <div className="hidden md:block">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-green-200">
                         Selamat datang kembali
                     </p>
-                    <p className="text-base font-semibold text-gray-900">
+                    <p className="text-base font-semibold text-gray-900 dark:text-white">
                         Kelola kebun dengan lebih rapi
                     </p>
                 </div>
 
                 <div className="flex-1" />
 
-                <div className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 px-3 py-2">
+                <button
+                    type="button"
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-700 shadow-sm transition hover:bg-lime-100 dark:border-white/10 dark:bg-white/10 dark:text-lime-300 dark:hover:bg-white/20"
+                    title={darkMode ? 'Ubah ke Light Mode' : 'Ubah ke Dark Mode'}
+                >
+                    {darkMode ? (
+                        <SunIcon className="h-5 w-5" />
+                    ) : (
+                        <MoonIcon className="h-5 w-5" />
+                    )}
+                </button>
+
+                <div className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 px-3 py-2 dark:border-white/10 dark:bg-white/10">
                     <div className="hidden text-right sm:block">
-                        <p className="text-sm font-semibold text-green-950">Admin</p>
-                        <p className="text-xs text-green-700">Farm Manager</p>
+                        <p className="text-sm font-semibold text-green-950 dark:text-white">
+                            Admin
+                        </p>
+                        <p className="text-xs text-green-700 dark:text-green-200">
+                            Farm Manager
+                        </p>
                     </div>
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 font-bold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 font-bold text-white dark:bg-lime-400 dark:text-green-950">
                         A
                     </div>
                 </div>

@@ -1,12 +1,19 @@
-import { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
-import SelectInput from '@/Components/SelectInput';
+import {
+    ArrowLeftIcon,
+    CheckIcon,
+    SparklesIcon,
+    HashtagIcon,
+    TagIcon,
+    DocumentTextIcon,
+    CalendarDaysIcon,
+    AdjustmentsHorizontalIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Form({ plant }) {
+    const isEdit = !!plant;
+
     const { data, setData, post, put, processing, errors } = useForm({
         plant_code: plant?.plant_code || '',
         plant_name: plant?.plant_name || '',
@@ -18,10 +25,9 @@ export default function Form({ plant }) {
         status: plant?.status || 'active',
     });
 
-    const isEdit = !!plant;
-
     const handleSubmit = (e) => {
         e.preventDefault();
+
         if (isEdit) {
             put(route('plants.update', plant.id));
         } else {
@@ -31,58 +37,316 @@ export default function Form({ plant }) {
 
     return (
         <AppLayout title={isEdit ? 'Edit Tanaman' : 'Tambah Tanaman'}>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
-                <div>
-                    <InputLabel forInput="plant_code" value="Kode Tanaman" />
-                    <TextInput id="plant_code" type="text" value={data.plant_code} onChange={e => setData('plant_code', e.target.value)} className="mt-1 block w-full" required />
-                    <InputError message={errors.plant_code} />
-                </div>
-                <div>
-                    <InputLabel forInput="plant_name" value="Nama Tanaman" />
-                    <TextInput id="plant_name" type="text" value={data.plant_name} onChange={e => setData('plant_name', e.target.value)} className="mt-1 block w-full" required />
-                    <InputError message={errors.plant_name} />
-                </div>
-                <div>
-                    <InputLabel forInput="category" value="Kategori" />
-                    <SelectInput id="category" value={data.category} onChange={e => setData('category', e.target.value)} className="mt-1 block w-full">
-                        <option value="">Pilih Kategori</option>
-                        <option value="Leaf">Daun</option>
-                        <option value="Fruit">Buah</option>
-                        <option value="Root">Umbi</option>
-                    </SelectInput>
-                    <InputError message={errors.category} />
-                </div>
-                <div>
-                    <InputLabel forInput="description" value="Deskripsi" />
-                    <textarea id="description" rows="3" value={data.description} onChange={e => setData('description', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <InputLabel forInput="typical_seedling_days" value="Hari Semai" />
-                        <TextInput type="number" value={data.typical_seedling_days} onChange={e => setData('typical_seedling_days', e.target.value)} className="mt-1 block w-full" />
+            <div className="mx-auto max-w-5xl">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-green-700">
+                            <SparklesIcon className="h-6 w-6" />
+                        </div>
+
+                        <div>
+                            <h2 className="text-xl font-bold text-green-950">
+                                {isEdit ? 'Edit Tanaman' : 'Tambah Tanaman'}
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Kelola data tanaman, kategori, dan estimasi masa budidaya.
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <InputLabel forInput="typical_growth_days" value="Hari Tumbuh" />
-                        <TextInput type="number" value={data.typical_growth_days} onChange={e => setData('typical_growth_days', e.target.value)} className="mt-1 block w-full" />
+
+                    <Link
+                        href={route('plants.index')}
+                        className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+                    >
+                        <ArrowLeftIcon className="mr-2 h-5 w-5" />
+                        Kembali
+                    </Link>
+                </div>
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm"
+                >
+                    <div className="border-b border-green-100 bg-green-50 px-6 py-5">
+                        <h3 className="text-lg font-bold text-green-950">
+                            Informasi Tanaman
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Data ini menjadi dasar untuk semai, pindah tanam, dan estimasi panen.
+                        </p>
                     </div>
-                    <div>
-                        <InputLabel forInput="typical_harvest_days" value="Hari Panen" />
-                        <TextInput type="number" value={data.typical_harvest_days} onChange={e => setData('typical_harvest_days', e.target.value)} className="mt-1 block w-full" />
+
+                    <div className="grid gap-6 p-6 md:grid-cols-2">
+                        <FormInput
+                            id="plant_code"
+                            label="Kode Tanaman"
+                            value={data.plant_code}
+                            error={errors.plant_code}
+                            required
+                            icon={HashtagIcon}
+                            placeholder="Contoh: PLT-001"
+                            onChange={(value) => setData('plant_code', value)}
+                        />
+
+                        <FormInput
+                            id="plant_name"
+                            label="Nama Tanaman"
+                            value={data.plant_name}
+                            error={errors.plant_name}
+                            required
+                            icon={SparklesIcon}
+                            placeholder="Contoh: Selada"
+                            onChange={(value) => setData('plant_name', value)}
+                        />
+
+                        <FormSelect
+                            id="category"
+                            label="Kategori"
+                            value={data.category}
+                            error={errors.category}
+                            icon={TagIcon}
+                            onChange={(value) => setData('category', value)}
+                            options={[
+                                { value: '', label: 'Pilih Kategori' },
+                                { value: 'Leaf', label: 'Daun' },
+                                { value: 'Fruit', label: 'Buah' },
+                                { value: 'Root', label: 'Umbi' },
+                            ]}
+                        />
+
+                        <FormSelect
+                            id="status"
+                            label="Status"
+                            value={data.status}
+                            error={errors.status}
+                            icon={AdjustmentsHorizontalIcon}
+                            onChange={(value) => setData('status', value)}
+                            options={[
+                                { value: 'active', label: 'Aktif' },
+                                { value: 'inactive', label: 'Nonaktif' },
+                            ]}
+                        />
+
+                        <div className="md:col-span-2">
+                            <div className="rounded-3xl border border-green-100 bg-green-50 p-5">
+                                <div className="mb-4 flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-green-700">
+                                        <CalendarDaysIcon className="h-5 w-5" />
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-bold text-green-950">
+                                            Estimasi Hari Budidaya
+                                        </h4>
+                                        <p className="text-sm text-gray-500">
+                                            Digunakan untuk menghitung jadwal pindah tanam dan panen.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-3">
+                                    <FormInput
+                                        id="typical_seedling_days"
+                                        type="number"
+                                        label="Hari Semai"
+                                        value={data.typical_seedling_days}
+                                        error={errors.typical_seedling_days}
+                                        placeholder="Contoh: 14"
+                                        onChange={(value) => setData('typical_seedling_days', value)}
+                                    />
+
+                                    <FormInput
+                                        id="typical_growth_days"
+                                        type="number"
+                                        label="Hari Tumbuh"
+                                        value={data.typical_growth_days}
+                                        error={errors.typical_growth_days}
+                                        placeholder="Contoh: 21"
+                                        onChange={(value) => setData('typical_growth_days', value)}
+                                    />
+
+                                    <FormInput
+                                        id="typical_harvest_days"
+                                        type="number"
+                                        label="Hari Panen"
+                                        value={data.typical_harvest_days}
+                                        error={errors.typical_harvest_days}
+                                        placeholder="Contoh: 35"
+                                        onChange={(value) => setData('typical_harvest_days', value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <FormTextarea
+                                id="description"
+                                label="Deskripsi"
+                                value={data.description}
+                                error={errors.description}
+                                icon={DocumentTextIcon}
+                                placeholder="Contoh: Cocok untuk hidroponik NFT dan panen cepat."
+                                onChange={(value) => setData('description', value)}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <InputLabel forInput="status" value="Status" />
-                    <SelectInput id="status" value={data.status} onChange={e => setData('status', e.target.value)} className="mt-1 block w-full">
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Nonaktif</option>
-                    </SelectInput>
-                </div>
-                <div className="flex justify-end">
-                    <button type="submit" disabled={processing} className="inline-flex justify-center rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                        {isEdit ? 'Update' : 'Simpan'}
-                    </button>
-                </div>
-            </form>
+
+                    <div className="flex flex-col-reverse gap-3 border-t border-green-100 bg-green-50 px-6 py-5 sm:flex-row sm:justify-end">
+                        <Link
+                            href={route('plants.index')}
+                            className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-5 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+                        >
+                            Batal
+                        </Link>
+
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="inline-flex items-center justify-center rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            <CheckIcon className="mr-2 h-5 w-5" />
+                            {processing
+                                ? 'Menyimpan...'
+                                : isEdit
+                                    ? 'Update Tanaman'
+                                    : 'Simpan Tanaman'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </AppLayout>
+    );
+}
+
+function FormInput({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    type = 'text',
+    required = false,
+    placeholder = '',
+    icon: Icon,
+}) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
+                {label} {required && <span className="text-red-500">*</span>}
+            </label>
+
+            <div
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                    }`}
+            >
+                {Icon && (
+                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700" />
+                )}
+
+                <input
+                    id={id}
+                    type={type}
+                    value={value}
+                    required={required}
+                    placeholder={placeholder}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                />
+            </div>
+
+            {error && (
+                <p className="mt-2 text-sm font-medium text-red-600">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function FormSelect({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    options = [],
+    icon: Icon,
+}) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
+                {label}
+            </label>
+
+            <div
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                    }`}
+            >
+                {Icon && (
+                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700" />
+                )}
+
+                <select
+                    id={id}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 focus:ring-0"
+                >
+                    {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {error && (
+                <p className="mt-2 text-sm font-medium text-red-600">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function FormTextarea({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    placeholder = '',
+    icon: Icon,
+}) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
+                {label}
+            </label>
+
+            <div
+                className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                    }`}
+            >
+                {Icon && (
+                    <Icon className="mr-2 mt-2 h-5 w-5 shrink-0 text-green-700" />
+                )}
+
+                <textarea
+                    id={id}
+                    rows="4"
+                    value={value}
+                    placeholder={placeholder}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full resize-none border-0 bg-transparent px-1 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                />
+            </div>
+
+            {error && (
+                <p className="mt-2 text-sm font-medium text-red-600">
+                    {error}
+                </p>
+            )}
+        </div>
     );
 }
