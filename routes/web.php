@@ -18,6 +18,7 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PlantMovementController;
+use App\Http\Controllers\UserController;
 
 
 Route::get('/', function () {
@@ -85,6 +86,8 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/productivity', [ReportController::class, 'productivity'])->name('productivity');
         // Route::get('/stock', [ReportController::class, 'stock'])->name('stock');
     });
+
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__.'/auth.php';

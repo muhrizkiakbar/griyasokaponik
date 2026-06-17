@@ -18,6 +18,7 @@ import {
     XMarkIcon,
     Bars3Icon,
     BanknotesIcon,
+    UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import {
     SunIcon,
@@ -51,6 +52,7 @@ const navigationGroups = [
             { name: 'Pengeluaran', href: '/expenses', icon: BanknotesIcon },
             { name: 'Customer', href: '/customers', icon: UserGroupIcon },
             { name: 'Kategori Pengeluaran', href: '/expense-categories', icon: TagIcon },
+            { name: 'User', href: '/users', icon: UserCircleIcon },
         ],
     },
     {
@@ -63,10 +65,16 @@ const navigationGroups = [
 
 export default function AppLayout({ children, title = 'Manajemen Kebun' }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { url } = usePage();
+
+    const page = usePage();
+
+    const url = page.url || '';
+    const user = page.props.auth?.user;
 
     const isActive = (href) => {
+        if (!href) return false;
         if (href === '/dashboard') return url === href;
+
         return url.startsWith(href);
     };
 
@@ -81,7 +89,10 @@ export default function AppLayout({ children, title = 'Manajemen Kebun' }) {
             <DesktopSidebar isActive={isActive} />
 
             <div className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16] lg:pl-72">
-                <Header setSidebarOpen={setSidebarOpen} />
+                <Header
+                    setSidebarOpen={setSidebarOpen}
+                    user={user}
+                />
 
                 <main className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16]">
                     <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -243,7 +254,7 @@ function SidebarContent({ isActive }) {
     );
 }
 
-function Header({ setSidebarOpen }) {
+function Header({ setSidebarOpen, user }) {
     const [darkMode, setDarkMode] = useState(() => {
         return localStorage.getItem('theme') === 'dark';
     });
@@ -257,6 +268,15 @@ function Header({ setSidebarOpen }) {
             localStorage.setItem('theme', 'light');
         }
     }, [darkMode]);
+
+    const initials = user?.name
+        ? user.name
+            .split(' ')
+            .map((word) => word[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase()
+        : 'U';
 
     return (
         <header className="sticky top-0 z-30 border-b border-green-100 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#123D2A]/90">
@@ -302,15 +322,16 @@ function Header({ setSidebarOpen }) {
                             >
                                 <div className="hidden text-right sm:block">
                                     <p className="text-sm font-semibold text-green-950 dark:text-white">
-                                        Admin
+                                        {user?.name}
                                     </p>
+
                                     <p className="text-xs text-green-700 dark:text-green-200">
-                                        Farm Manager
+                                        {user?.email}
                                     </p>
                                 </div>
 
                                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 font-bold text-white dark:bg-lime-400 dark:text-green-950">
-                                    A
+                                    {initials}
                                 </div>
 
                                 <svg
