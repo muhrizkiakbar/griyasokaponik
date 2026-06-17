@@ -8,13 +8,59 @@ use App\Models\Harvest;
 use App\Http\Requests\SaleRequest;
 use Inertia\Inertia;
 use DB;
+use Illuminate\Http\Request;
 
 class SaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sales = Sale::with('customer')->orderBy('sale_date', 'desc')->get();
-        return Inertia::render('Sale/Index', ['sales' => $sales]);
+        $search = trim((string) $request->query('search'));
+        $customerId = $request->query('customer_id');
+        $paymentStatus = $request->query('payment_status');
+
+        $sales = Sale::query()
+            ->with(['customer'])
+            ->when($customerId, function ($query) use ($customerId) {
+                $query->where('customer_id', $customerId);
+            })
+            ->when($paymentStatus, function ($query) use ($paymentStatus) {
+                $query->where('payment_status', $paymentStatus);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('sale_number', 'like', "%{$search}%")
+                        ->orWhere('sale_date', 'like', "%{$search}%")
+                        ->orWhere('subtotal', 'like', "%{$search}%")
+                        ->orWhere('discount', 'like', "%{$search}%")
+                        ->orWhere('grand_total', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhere('created_at', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                            $customerQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('customer_code', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        $customers = Customer::query()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+
+        return Inertia::render('Sale/Index', [
+            'sales' => $sales,
+            'customers' => $customers,
+            'filters' => [
+                'search' => $search,
+                'customer_id' => $customerId,
+                'payment_status' => $paymentStatus,
+            ],
+        ]);
     }
 
     public function create()

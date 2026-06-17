@@ -8,16 +8,62 @@ use App\Http\Requests\HarvestRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 
 class HarvestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $harvests = Harvest::with('plantingBatch.plantVariety.plant')
-            ->orderBy('harvest_date', 'desc')
-            ->get();
-        return Inertia::render('Harvest/Index', ['harvests' => $harvests]);
+        $search = trim((string) $request->query('search'));
+        $plantingBatchId = $request->query('planting_batch_id');
+        $unit = $request->query('unit');
+        $grade = $request->query('grade');
+
+        $harvests = Harvest::query()
+            ->with(['plantingBatch'])
+            ->when($plantingBatchId, function ($query) use ($plantingBatchId) {
+                $query->where('planting_batch_id', $plantingBatchId);
+            })
+            ->when($unit, function ($query) use ($unit) {
+                $query->where('unit', $unit);
+            })
+            ->when($grade, function ($query) use ($grade) {
+                $query->where('grade', $grade);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('harvest_date', 'like', "%{$search}%")
+                        ->orWhere('quantity', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhere('created_at', 'like', "%{$search}%")
+                        ->orWhereHas('plantingBatch', function ($batchQuery) use ($search) {
+                            $batchQuery->where('batch_code', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        $batches = PlantingBatch::query()
+            ->latest('id')
+            ->get(['id', 'batch_code']);
+
+
+
+        return Inertia::render(
+            'Harvest/Index',
+            [
+                'harvests' => $harvests,
+                'batches' => $batches,
+                'filters' => [
+                    'search' => $search,
+                    'planting_batch_id' => $plantingBatchId,
+                    'unit' => $unit,
+                    'grade' => $grade,
+                ],
+            ]
+        );
     }
 
     public function create(Request $request)

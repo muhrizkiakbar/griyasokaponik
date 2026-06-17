@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Dialog, Transition } from '@headlessui/react';
+import Dropdown from '@/Components/Dropdown';
 import {
     HomeIcon,
     SparklesIcon,
@@ -21,6 +22,7 @@ import {
 import {
     SunIcon,
     MoonIcon,
+    ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
 const navigationGroups = [
@@ -69,7 +71,7 @@ export default function AppLayout({ children, title = 'Manajemen Kebun' }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F7F2]">
+        <div className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16]">
             <MobileSidebar
                 open={sidebarOpen}
                 setOpen={setSidebarOpen}
@@ -78,16 +80,16 @@ export default function AppLayout({ children, title = 'Manajemen Kebun' }) {
 
             <DesktopSidebar isActive={isActive} />
 
-            <div className="lg:pl-72">
+            <div className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16] lg:pl-72">
                 <Header setSidebarOpen={setSidebarOpen} />
 
-                <main className="min-h-screen">
+                <main className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16]">
                     <div className="px-4 py-6 sm:px-6 lg:px-8">
                         <div className="mx-auto max-w-7xl">
-                            <div className="mb-6 overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 p-6 shadow-sm">
+                            <div className="mb-6 overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 p-6 shadow-sm dark:border-white/10">
                                 <div className="flex flex-col gap-2">
                                     <span className="text-sm font-medium text-green-100">
-                                        KebunKu Management System
+                                        GriyaAgro Management System
                                     </span>
                                     <h1 className="text-2xl font-bold text-white md:text-3xl">
                                         {title}
@@ -171,7 +173,7 @@ function SidebarContent({ isActive }) {
 
                 <div>
                     <h1 className="text-xl font-extrabold tracking-tight text-white">
-                        KebunKu
+                        GriyaAgro
                     </h1>
                     <p className="text-xs font-medium text-green-200">
                         Smart Farm Dashboard
@@ -291,20 +293,53 @@ function Header({ setSidebarOpen }) {
                     )}
                 </button>
 
-                <div className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 px-3 py-2 dark:border-white/10 dark:bg-white/10">
-                    <div className="hidden text-right sm:block">
-                        <p className="text-sm font-semibold text-green-950 dark:text-white">
-                            Admin
-                        </p>
-                        <p className="text-xs text-green-700 dark:text-green-200">
-                            Farm Manager
-                        </p>
-                    </div>
+                <div className="relative">
+                    <Dropdown>
+                        <Dropdown.Trigger>
+                            <button
+                                type="button"
+                                className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 px-3 py-2 shadow-sm transition hover:bg-lime-100 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20"
+                            >
+                                <div className="hidden text-right sm:block">
+                                    <p className="text-sm font-semibold text-green-950 dark:text-white">
+                                        Admin
+                                    </p>
+                                    <p className="text-xs text-green-700 dark:text-green-200">
+                                        Farm Manager
+                                    </p>
+                                </div>
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 font-bold text-white dark:bg-lime-400 dark:text-green-950">
-                        A
-                    </div>
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 font-bold text-white dark:bg-lime-400 dark:text-green-950">
+                                    A
+                                </div>
+
+                                <svg
+                                    className="h-4 w-4 text-green-700 dark:text-green-100"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </button>
+                        </Dropdown.Trigger>
+
+                        <Dropdown.Content align="right">
+                            <Dropdown.Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                            >
+                                Logout
+                            </Dropdown.Link>
+                        </Dropdown.Content>
+                    </Dropdown>
                 </div>
+
             </div>
         </header>
     );

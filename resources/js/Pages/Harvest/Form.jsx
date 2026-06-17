@@ -1,13 +1,21 @@
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
-import SelectInput from '@/Components/SelectInput';
 import SearchableSelect from '@/Components/SearchableSelect';
-import InputError from '@/Components/InputError';
+import {
+    ArrowLeftIcon,
+    CheckIcon,
+    ScissorsIcon,
+    ClipboardDocumentListIcon,
+    CalendarDaysIcon,
+    ScaleIcon,
+    CubeIcon,
+    SparklesIcon,
+    DocumentTextIcon,
+} from '@heroicons/react/24/outline';
 
-export default function Form({ batches, selectedBatch, harvest }) {
+export default function Form({ batches = [], selectedBatch, harvest }) {
     const isEdit = !!harvest;
+
     const { data, setData, post, put, processing, errors } = useForm({
         planting_batch_id: harvest?.planting_batch_id || selectedBatch?.id || '',
         harvest_date: harvest?.harvest_date || new Date().toISOString().split('T')[0],
@@ -19,6 +27,7 @@ export default function Form({ batches, selectedBatch, harvest }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         if (isEdit) {
             put(route('harvests.update', harvest.id));
         } else {
@@ -26,69 +35,276 @@ export default function Form({ batches, selectedBatch, harvest }) {
         }
     };
 
-    // Siapkan options untuk SearchableSelect
-    const batchOptions = batches.map(batch => ({
+    const batchOptions = batches.map((batch) => ({
         id: batch.id,
-        label: `${batch.batch_code} - ${batch.plant_variety?.plant?.plant_name} (${batch.plant_variety?.variety_name}) - Estimasi: ${batch.expected_harvest_date}`,
         value: batch.id,
+        label: `${batch.batch_code} - ${batch.plant_variety?.plant?.plant_name || '-'} (${batch.plant_variety?.variety_name || '-'}) - Estimasi: ${batch.expected_harvest_date || '-'}`,
     }));
 
     return (
         <AppLayout title={isEdit ? 'Edit Panen' : 'Catat Panen'}>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
-                <div>
-                    <InputLabel forInput="planting_batch_id" value="Batch Tanaman" />
-                    <SearchableSelect
-                        options={batchOptions}
-                        value={data.planting_batch_id}
-                        onChange={(e) => setData('planting_batch_id', e.target.value)}
-                        placeholder="Cari atau pilih batch yang akan dipanen..."
-                        required
-                    />
-                    <InputError message={errors.planting_batch_id} />
-                    {data.planting_batch_id && (
-                        <p className="mt-1 text-xs text-gray-500">
-                            Batch yang ditampilkan hanya yang sudah lewat jadwal panen lebih dari 5 hari.
+            <div className="mx-auto max-w-5xl">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-green-700 dark:bg-lime-400 dark:text-green-950">
+                            <ScissorsIcon className="h-6 w-6" />
+                        </div>
+
+                        <div>
+                            <h2 className="text-xl font-bold text-green-950 dark:text-white">
+                                {isEdit ? 'Edit Panen' : 'Catat Panen'}
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
+                                Catat hasil panen berdasarkan batch, jumlah, satuan, dan grade.
+                            </p>
+                        </div>
+                    </div>
+
+                    <Link
+                        href={route('harvests.index')}
+                        className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
+                    >
+                        <ArrowLeftIcon className="mr-2 h-5 w-5" />
+                        Kembali
+                    </Link>
+                </div>
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#123D2A]"
+                >
+                    <div className="border-b border-green-100 bg-green-50 px-6 py-5 dark:border-white/10 dark:bg-white/10">
+                        <h3 className="text-lg font-bold text-green-950 dark:text-white">
+                            Informasi Panen
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
+                            Data ini digunakan untuk stok panen, penjualan, dan laporan produksi.
                         </p>
-                    )}
-                </div>
-                <div>
-                    <InputLabel forInput="harvest_date" value="Tanggal Panen" />
-                    <TextInput type="date" value={data.harvest_date} onChange={e => setData('harvest_date', e.target.value)} required />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <InputLabel forInput="quantity" value="Jumlah" />
-                        <TextInput type="number" step="0.01" value={data.quantity} onChange={e => setData('quantity', e.target.value)} required />
                     </div>
-                    <div>
-                        <InputLabel forInput="unit" value="Satuan" />
-                        <SelectInput value={data.unit} onChange={e => setData('unit', e.target.value)}>
-                            <option value="kg">kg</option>
-                            <option value="gram">gram</option>
-                            <option value="pcs">pcs</option>
-                            <option value="ikat">ikat</option>
-                        </SelectInput>
+
+                    <div className="grid gap-6 p-6 md:grid-cols-2">
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50">
+                                Batch Tanaman <span className="text-red-500 dark:text-red-300">*</span>
+                            </label>
+
+                            <div className="rounded-2xl border border-green-100 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-[#0B2A1E]">
+                                <SearchableSelect
+                                    options={batchOptions}
+                                    value={data.planting_batch_id}
+                                    onChange={(e) => setData('planting_batch_id', e.target.value)}
+                                    placeholder="Cari atau pilih batch yang akan dipanen..."
+                                    required
+                                />
+                            </div>
+
+                            {errors.planting_batch_id && (
+                                <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
+                                    {errors.planting_batch_id}
+                                </p>
+                            )}
+
+                            {data.planting_batch_id && (
+                                <p className="mt-2 text-xs text-gray-500 dark:text-green-100">
+                                    Batch yang ditampilkan hanya yang sudah lewat jadwal panen lebih dari 5 hari.
+                                </p>
+                            )}
+                        </div>
+
+                        <FormInput
+                            id="harvest_date"
+                            type="date"
+                            label="Tanggal Panen"
+                            value={data.harvest_date}
+                            error={errors.harvest_date}
+                            required
+                            icon={CalendarDaysIcon}
+                            onChange={(value) => setData('harvest_date', value)}
+                        />
+
+                        <FormInput
+                            id="quantity"
+                            type="number"
+                            step="0.01"
+                            label="Jumlah"
+                            value={data.quantity}
+                            error={errors.quantity}
+                            required
+                            icon={ScaleIcon}
+                            placeholder="Contoh: 25"
+                            onChange={(value) => setData('quantity', value)}
+                        />
+
+                        <FormSelect
+                            id="unit"
+                            label="Satuan"
+                            value={data.unit}
+                            error={errors.unit}
+                            icon={CubeIcon}
+                            onChange={(value) => setData('unit', value)}
+                            options={[
+                                { value: 'kg', label: 'kg' },
+                                { value: 'gram', label: 'gram' },
+                                { value: 'pcs', label: 'pcs' },
+                                { value: 'ikat', label: 'ikat' },
+                            ]}
+                        />
+
+                        <FormSelect
+                            id="grade"
+                            label="Grade"
+                            value={data.grade}
+                            error={errors.grade}
+                            icon={SparklesIcon}
+                            onChange={(value) => setData('grade', value)}
+                            options={[
+                                { value: 'Grade A', label: 'Grade A' },
+                                { value: 'Grade B', label: 'Grade B' },
+                                { value: 'Reject', label: 'Reject' },
+                            ]}
+                        />
+
+                        <div className="md:col-span-2">
+                            <FormTextarea
+                                id="notes"
+                                label="Catatan"
+                                value={data.notes}
+                                error={errors.notes}
+                                icon={DocumentTextIcon}
+                                placeholder="Contoh: Panen kualitas baik, daun segar, siap dijual."
+                                onChange={(value) => setData('notes', value)}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <InputLabel forInput="grade" value="Grade" />
-                        <SelectInput value={data.grade} onChange={e => setData('grade', e.target.value)}>
-                            <option value="Grade A">Grade A</option>
-                            <option value="Grade B">Grade B</option>
-                            <option value="Reject">Reject</option>
-                        </SelectInput>
+
+                    <div className="flex flex-col-reverse gap-3 border-t border-green-100 bg-green-50 px-6 py-5 dark:border-white/10 dark:bg-white/10 sm:flex-row sm:justify-end">
+                        <Link
+                            href={route('harvests.index')}
+                            className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-5 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
+                        >
+                            Batal
+                        </Link>
+
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="inline-flex items-center justify-center rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            <CheckIcon className="mr-2 h-5 w-5" />
+                            {processing
+                                ? 'Menyimpan...'
+                                : isEdit
+                                    ? 'Update Panen'
+                                    : 'Simpan Panen'}
+                        </button>
                     </div>
-                </div>
-                <div>
-                    <InputLabel forInput="notes" value="Catatan" />
-                    <textarea rows="2" value={data.notes} onChange={e => setData('notes', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300" />
-                </div>
-                <div className="flex justify-end">
-                    <button type="submit" disabled={processing} className="bg-green-600 text-white px-4 py-2 rounded">
-                        {isEdit ? 'Update' : 'Simpan'}
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </AppLayout>
+    );
+}
+
+function FormInput({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    type = 'text',
+    step,
+    required = false,
+    placeholder = '',
+    icon: Icon,
+}) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50">
+                {label} {required && <span className="text-red-500 dark:text-red-300">*</span>}
+            </label>
+
+            <div
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'
+                    }`}
+            >
+                {Icon && <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
+
+                <input
+                    id={id}
+                    type={type}
+                    step={step}
+                    value={value}
+                    required={required}
+                    placeholder={placeholder}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-green-200/60"
+                />
+            </div>
+
+            {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">{error}</p>}
+        </div>
+    );
+}
+
+function FormSelect({ id, label, value, onChange, error, options = [], icon: Icon }) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50">
+                {label}
+            </label>
+
+            <div
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'
+                    }`}
+            >
+                {Icon && <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
+
+                <select
+                    id={id}
+                    value={value ?? ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 focus:ring-0 dark:text-white"
+                >
+                    {options.map((option) => (
+                        <option
+                            key={option.value}
+                            value={option.value}
+                            className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                        >
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">{error}</p>}
+        </div>
+    );
+}
+
+function FormTextarea({ id, label, value, onChange, error, placeholder = '', icon: Icon }) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50">
+                {label}
+            </label>
+
+            <div
+                className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'
+                    }`}
+            >
+                {Icon && <Icon className="mr-2 mt-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
+
+                <textarea
+                    id={id}
+                    rows="4"
+                    value={value}
+                    placeholder={placeholder}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="block w-full resize-none border-0 bg-transparent px-1 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-green-200/60"
+                />
+            </div>
+
+            {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">{error}</p>}
+        </div>
     );
 }

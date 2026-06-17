@@ -1,5 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import {
     EyeIcon,
     PlusIcon,
@@ -8,15 +9,73 @@ import {
     CalendarDaysIcon,
     HashtagIcon,
     CubeIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
+import CursorPagination from '@/Components/CursorPagination';
 
-export default function Index({ batches = [] }) {
+const stageOptions = {
+    planned: 'Direncanakan',
+    seedling: 'Semai',
+    vegetative: 'Vegetatif',
+    generative: 'Generatif',
+    harvested: 'Dipanen',
+    failed: 'Gagal',
+};
+
+const statusOptions = {
+    active: 'Aktif',
+    inactive: 'Nonaktif',
+};
+
+export default function Index({
+    batches = { data: [] },
+    varieties = [],
+    filters = {},
+}) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [plantVarietyId, setPlantVarietyId] = useState(filters.plant_variety_id || '');
+    const [currentStage, setCurrentStage] = useState(filters.current_stage || '');
+    const [status, setStatus] = useState(filters.status || '');
+
     const isReadyToHarvest = (batch) => {
         return (
             batch.expected_harvest_date &&
             new Date(batch.expected_harvest_date) <= new Date() &&
             batch.current_stage !== 'harvested'
         );
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            const params = {};
+
+            if (search) params.search = search;
+            if (plantVarietyId) params.plant_variety_id = plantVarietyId;
+            if (currentStage) params.current_stage = currentStage;
+            if (status) params.status = status;
+
+            router.get(route('planting-batches.index'), params, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, plantVarietyId, currentStage, status]);
+
+    const resetSearch = () => {
+        setSearch('');
+        setPlantVarietyId('');
+        setCurrentStage('');
+        setStatus('');
+
+        router.get(route('planting-batches.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     return (
@@ -47,6 +106,92 @@ export default function Index({ batches = [] }) {
                     </Link>
                 </div>
 
+                <div className="mt-6 rounded-2xl border border-green-100 bg-green-50 p-4 dark:border-white/10 dark:bg-[#0B2A1E]">
+                    <div className="grid gap-3 xl:grid-cols-12">
+                        <div className="relative xl:col-span-4">
+                            <MagnifyingGlassIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-700 dark:text-lime-400" />
+
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Cari kode batch, tanggal, jumlah, catatan, atau tanggal input..."
+                                className="w-full rounded-2xl border border-green-100 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white dark:placeholder:text-green-200/60"
+                            />
+                        </div>
+
+                        <div className="xl:col-span-3">
+                            <select
+                                value={plantVarietyId}
+                                onChange={(e) => setPlantVarietyId(e.target.value)}
+                                className="w-full rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white"
+                            >
+                                <option value="">Semua Varietas</option>
+                                {varieties.map((variety) => (
+                                    <option
+                                        key={variety.id}
+                                        value={variety.id}
+                                        className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                                    >
+                                        {variety.plant?.plant_name || '-'} - {variety.variety_name || '-'}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="xl:col-span-2">
+                            <select
+                                value={currentStage}
+                                onChange={(e) => setCurrentStage(e.target.value)}
+                                className="w-full rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white"
+                            >
+                                <option value="">Semua Fase</option>
+                                {Object.entries(stageOptions).map(([value, label]) => (
+                                    <option
+                                        key={value}
+                                        value={value}
+                                        className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                                    >
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="xl:col-span-2">
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="w-full rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white"
+                            >
+                                <option value="">Semua Status</option>
+                                {Object.entries(statusOptions).map(([value, label]) => (
+                                    <option
+                                        key={value}
+                                        value={value}
+                                        className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                                    >
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="xl:col-span-1">
+                            {(search || plantVarietyId || currentStage || status) && (
+                                <button
+                                    type="button"
+                                    onClick={resetSearch}
+                                    className="inline-flex w-full items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
+                                    title="Reset Filter"
+                                >
+                                    <XMarkIcon className="h-5 w-5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="mt-6 hidden overflow-hidden rounded-2xl border border-green-100 shadow-sm dark:border-white/10 md:block">
                     <table className="min-w-full divide-y divide-green-100 dark:divide-white/10">
                         <thead className="bg-green-50 dark:bg-white/10">
@@ -61,14 +206,19 @@ export default function Index({ batches = [] }) {
                         </thead>
 
                         <tbody className="divide-y divide-green-100 bg-white dark:divide-white/10 dark:bg-[#0B2A1E]">
-                            {batches.length === 0 ? (
+                            {batches.data.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-4 py-10 text-center">
-                                        <EmptyState />
+                                        <EmptyState
+                                            search={search}
+                                            plantVarietyId={plantVarietyId}
+                                            currentStage={currentStage}
+                                            status={status}
+                                        />
                                     </td>
                                 </tr>
                             ) : (
-                                batches.map((batch) => (
+                                batches.data.map((batch) => (
                                     <tr
                                         key={batch.id}
                                         className="transition hover:bg-green-50/60 dark:hover:bg-white/5"
@@ -130,12 +280,18 @@ export default function Index({ batches = [] }) {
                 </div>
 
                 <div className="mt-6 space-y-3 md:hidden">
-                    {batches.length === 0 ? (
+                    {batches.data.length === 0 ? (
                         <div className="rounded-2xl border border-dashed border-green-200 bg-green-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
-                            <EmptyState compact />
+                            <EmptyState
+                                compact
+                                search={search}
+                                plantVarietyId={plantVarietyId}
+                                currentStage={currentStage}
+                                status={status}
+                            />
                         </div>
                     ) : (
-                        batches.map((batch) => (
+                        batches.data.map((batch) => (
                             <div
                                 key={batch.id}
                                 className="rounded-2xl border border-green-100 bg-green-50 p-4 shadow-sm dark:border-white/10 dark:bg-[#0B2A1E]"
@@ -182,6 +338,8 @@ export default function Index({ batches = [] }) {
                         ))
                     )}
                 </div>
+
+                <CursorPagination data={batches} />
             </div>
         </AppLayout>
     );
@@ -203,7 +361,15 @@ function StageBadge({ batch, readyToHarvest }) {
     );
 }
 
-function EmptyState({ compact = false }) {
+function EmptyState({
+    compact = false,
+    search = '',
+    plantVarietyId = '',
+    currentStage = '',
+    status = '',
+}) {
+    const hasFilter = search || plantVarietyId || currentStage || status;
+
     return (
         <div className="mx-auto flex max-w-sm flex-col items-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-700 dark:bg-white/10 dark:text-lime-400">
@@ -211,12 +377,14 @@ function EmptyState({ compact = false }) {
             </div>
 
             <p className="mt-3 font-semibold text-green-950 dark:text-white">
-                Belum ada batch semai
+                {hasFilter ? 'Batch semai tidak ditemukan' : 'Belum ada batch semai'}
             </p>
 
             {!compact && (
                 <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
-                    Buat batch pertama untuk mulai mencatat proses semai dan tanam.
+                    {hasFilter
+                        ? 'Coba gunakan kata kunci lain, pilih varietas berbeda, atau ubah fase/status.'
+                        : 'Buat batch pertama untuk mulai mencatat proses semai dan tanam.'}
                 </p>
             )}
         </div>
@@ -242,14 +410,5 @@ function TableCell({ children, align = 'left' }) {
 }
 
 function formatStage(stage) {
-    const stages = {
-        planned: 'Direncanakan',
-        seedling: 'Semai',
-        vegetative: 'Vegetatif',
-        generative: 'Generatif',
-        harvested: 'Dipanen',
-        failed: 'Gagal',
-    };
-
-    return stages[stage] || stage || '-';
+    return stageOptions[stage] || stage || '-';
 }

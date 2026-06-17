@@ -8,10 +8,32 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::orderBy('name')->get();
-        return Inertia::render('Customer/Index', ['customers' => $customers]);
+        $search = trim((string) $request->query('search'));
+
+        $customers = Customer::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('customer_code', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%");
+                });
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        return Inertia::render(
+            'Customer/Index',
+            [
+                'customers' => $customers,
+                'filters' => [
+                    'search' => $search,
+                ],
+            ]);
     }
 
     public function create()

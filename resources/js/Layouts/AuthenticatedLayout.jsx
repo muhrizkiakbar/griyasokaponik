@@ -3,23 +3,42 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+    Bars3Icon,
+    XMarkIcon,
+    SunIcon,
+    MoonIcon,
+} from '@heroicons/react/24/outline';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem('theme') === 'dark';
+    });
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [darkMode]);
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
+        <div className="min-h-screen bg-[#F5F7F2] dark:bg-[#071F16]">
+            <nav className="sticky top-0 z-30 border-b border-green-100 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#123D2A]/90">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-green-700 dark:text-lime-400" />
                                 </Link>
                             </div>
 
@@ -33,14 +52,27 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center sm:gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-700 shadow-sm transition hover:bg-lime-100 dark:border-white/10 dark:bg-white/10 dark:text-lime-300 dark:hover:bg-white/20"
+                                title={darkMode ? 'Ubah ke Light Mode' : 'Ubah ke Dark Mode'}
+                            >
+                                {darkMode ? (
+                                    <SunIcon className="h-5 w-5" />
+                                ) : (
+                                    <MoonIcon className="h-5 w-5" />
+                                )}
+                            </button>
+
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
+                                        <span className="inline-flex rounded-2xl">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                className="inline-flex items-center rounded-2xl border border-green-100 bg-green-50 px-4 py-2 text-sm font-semibold text-green-950 shadow-sm transition hover:bg-lime-100 focus:outline-none dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
                                             >
                                                 {user.name}
 
@@ -61,11 +93,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
+                                        <Dropdown.Link href={route('profile.edit')}>
                                             Profile
                                         </Dropdown.Link>
+
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
@@ -78,56 +109,38 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center sm:hidden">
+                        <div className="-me-2 flex items-center gap-2 sm:hidden">
+                            <button
+                                type="button"
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-700 shadow-sm transition hover:bg-lime-100 dark:border-white/10 dark:bg-white/10 dark:text-lime-300 dark:hover:bg-white/20"
+                                title={darkMode ? 'Ubah ke Light Mode' : 'Ubah ke Dark Mode'}
+                            >
+                                {darkMode ? (
+                                    <SunIcon className="h-5 w-5" />
+                                ) : (
+                                    <MoonIcon className="h-5 w-5" />
+                                )}
+                            </button>
+
                             <button
                                 onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
+                                    setShowingNavigationDropdown((previousState) => !previousState)
                                 }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl p-2 text-green-700 transition hover:bg-green-50 focus:bg-green-50 focus:outline-none dark:text-green-100 dark:hover:bg-white/10 dark:focus:bg-white/10"
                             >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                                {showingNavigationDropdown ? (
+                                    <XMarkIcon className="h-6 w-6" />
+                                ) : (
+                                    <Bars3Icon className="h-6 w-6" />
+                                )}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
+                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' border-t border-green-100 bg-white/95 backdrop-blur-xl dark:border-white/10 dark:bg-[#123D2A]/95 sm:hidden'}>
+                    <div className="space-y-1 px-4 pb-3 pt-2">
                         <ResponsiveNavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
@@ -136,20 +149,21 @@ export default function AuthenticatedLayout({ header, children }) {
                         </ResponsiveNavLink>
                     </div>
 
-                    <div className="border-t border-gray-200 pb-1 pt-4">
+                    <div className="border-t border-green-100 pb-1 pt-4 dark:border-white/10">
                         <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
+                            <div className="text-base font-bold text-green-950 dark:text-white">
                                 {user.name}
                             </div>
-                            <div className="text-sm font-medium text-gray-500">
+                            <div className="text-sm font-medium text-gray-500 dark:text-green-100">
                                 {user.email}
                             </div>
                         </div>
 
-                        <div className="mt-3 space-y-1">
+                        <div className="mt-3 space-y-1 px-4">
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Profile
                             </ResponsiveNavLink>
+
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
@@ -163,8 +177,8 @@ export default function AuthenticatedLayout({ header, children }) {
             </nav>
 
             {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <header className="border-b border-green-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#123D2A]">
+                    <div className="mx-auto max-w-7xl px-4 py-6 text-green-950 dark:text-white sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>

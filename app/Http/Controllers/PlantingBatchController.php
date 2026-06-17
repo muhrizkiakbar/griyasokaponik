@@ -10,16 +10,68 @@ use App\Models\BatchAllocation;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use DB;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 
 class PlantingBatchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $batches = PlantingBatch::with('plantVariety.plant')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        return Inertia::render('PlantingBatch/Index', ['batches' => $batches]);
+        $search = trim((string) $request->query('search'));
+        $plantVarietyId = $request->query('plant_variety_id');
+        $currentStage = $request->query('current_stage');
+        $status = $request->query('status');
+
+        $batches = PlantingBatch::query()
+            ->with(['plantVariety.plant'])
+            ->when($plantVarietyId, function ($query) use ($plantVarietyId) {
+                $query->where('plant_variety_id', $plantVarietyId);
+            })
+            ->when($currentStage, function ($query) use ($currentStage) {
+                $query->where('current_stage', $currentStage);
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('batch_code', 'like', "%{$search}%")
+                        ->orWhere('seeding_date', 'like', "%{$search}%")
+                        ->orWhere('seed_quantity', 'like', "%{$search}%")
+                        ->orWhere('germinated_quantity', 'like', "%{$search}%")
+                        ->orWhere('transplanted_quantity', 'like', "%{$search}%")
+                        ->orWhere('harvested_quantity', 'like', "%{$search}%")
+                        ->orWhere('expected_transplant_date', 'like', "%{$search}%")
+                        ->orWhere('expected_harvest_date', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhere('created_at', 'like', "%{$search}%")
+                        ->orWhereHas('plantVariety', function ($varietyQuery) use ($search) {
+                            $varietyQuery->where('variety_name', 'like', "%{$search}%")
+                                ->orWhereHas('plant', function ($plantQuery) use ($search) {
+                                    $plantQuery->where('plant_name', 'like', "%{$search}%")
+                                        ->orWhere('plant_code', 'like', "%{$search}%");
+                                });
+                        });
+                });
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        $varieties = PlantVariety::query()
+            ->with(['plant'])
+            ->orderBy('variety_name')
+            ->get(['id', 'plant_id', 'variety_name']);
+
+        return Inertia::render('PlantingBatch/Index', [
+            'batches' => $batches,
+            'varieties' => $varieties,
+            'filters' => [
+                'search' => $search,
+                'plant_variety_id' => $plantVarietyId,
+                'current_stage' => $currentStage,
+                'status' => $status,
+            ],
+        ]);
     }
 
     public function create()

@@ -7,13 +7,50 @@ use App\Models\ExpenseCategory;
 use App\Http\Requests\ExpenseRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $expenses = Expense::with('category')->orderBy('expense_date', 'desc')->get();
-        return Inertia::render('Expense/Index', ['expenses' => $expenses]);
+        $search = trim((string) $request->query('search'));
+        $expenseCategoryId = $request->query('expense_category_id');
+
+        $expenses = Expense::query()
+            ->with(['category'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('expense_category_id', 'like', "%{$search}%")
+                        ->orWhere('expense_date', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('amount', 'like', "%{$search}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($expenseCategoryId, function ($query) use ($expenseCategoryId) {
+                $query->where('expense_category_id', $expenseCategoryId);
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        $categories = ExpenseCategory::query()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return Inertia::render(
+            'Expense/Index',
+            [
+                'expenses' => $expenses,
+                'categories' => $categories,
+                'filters' => [
+                    'search' => $search,
+                    'expense_category_id' => $expenseCategoryId,
+                ],
+            ]
+        );
     }
 
     public function create()

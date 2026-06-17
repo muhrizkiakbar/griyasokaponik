@@ -1,10 +1,14 @@
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    EnvelopeIcon,
+    LockClosedIcon,
+    SparklesIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -15,6 +19,7 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
+
         post(route('login'), {
             onFinish: () => reset('password'),
         });
@@ -24,94 +29,66 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Login - Manajemen Kebun" />
 
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
-                    {/* Logo & Header */}
-                    <div className="text-center">
-                        <div className="flex justify-center">
-                            <div className="h-16 w-16 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
-                                <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                </svg>
-                            </div>
+            <div className="flex min-h-screen items-center justify-center bg-[#F5F7F2] px-4 py-12 dark:bg-[#071F16] sm:px-6 lg:px-8">
+                <div className="w-full max-w-md overflow-hidden rounded-3xl border border-green-100 bg-white shadow-xl dark:border-white/10 dark:bg-[#123D2A]">
+                    <div className="bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 px-8 py-8 text-center">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-lime-400 shadow-lg shadow-green-950/20">
+                            <SparklesIcon className="h-9 w-9 text-green-950" />
                         </div>
-                        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+
+                        <h2 className="mt-5 text-3xl font-extrabold text-white">
                             Manajemen Kebun
                         </h2>
-                        <p className="mt-2 text-sm text-gray-600">
+
+                        <p className="mt-2 text-sm text-green-50">
                             Silakan login ke akun Anda
                         </p>
                     </div>
 
-                    {/* Status Message */}
-                    {status && (
-                        <div className="rounded-md bg-green-50 p-4 border border-green-200">
-                            <div className="text-sm text-green-700">
-                                {status}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Login Form */}
-                    <form className="mt-8 space-y-6" onSubmit={submit}>
-                        <div className="space-y-4">
-                            {/* Email Field */}
-                            <div>
-                                <InputLabel htmlFor="email" value="Alamat Email" className="text-gray-700" />
-                                <div className="mt-1 relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                        </svg>
-                                    </div>
-                                    <TextInput
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        value={data.email}
-                                        className="pl-10 block w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg"
-                                        autoComplete="username"
-                                        isFocused={true}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        placeholder="admin@kebun.test"
-                                    />
+                    <div className="p-8">
+                        {status && (
+                            <div className="mb-6 rounded-2xl border border-green-100 bg-green-50 p-4 dark:border-white/10 dark:bg-white/5">
+                                <div className="text-sm font-medium text-green-700 dark:text-green-100">
+                                    {status}
                                 </div>
-                                <InputError message={errors.email} className="mt-2" />
                             </div>
+                        )}
 
-                            {/* Password Field */}
-                            <div>
-                                <InputLabel htmlFor="password" value="Kata Sandi" className="text-gray-700" />
-                                <div className="mt-1 relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                    </div>
-                                    <TextInput
-                                        id="password"
-                                        type="password"
-                                        name="password"
-                                        value={data.password}
-                                        className="pl-10 block w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg"
-                                        autoComplete="current-password"
-                                        onChange={(e) => setData('password', e.target.value)}
-                                        placeholder="********"
-                                    />
-                                </div>
-                                <InputError message={errors.password} className="mt-2" />
-                            </div>
+                        <form className="space-y-6" onSubmit={submit}>
+                            <FormInput
+                                id="email"
+                                type="email"
+                                label="Alamat Email"
+                                value={data.email}
+                                error={errors.email}
+                                icon={EnvelopeIcon}
+                                placeholder="Email"
+                                autoFocus
+                                onChange={(value) => setData('email', value)}
+                            />
 
-                            {/* Remember Me & Forgot Password */}
+                            <FormInput
+                                id="password"
+                                type="password"
+                                label="Kata Sandi"
+                                value={data.password}
+                                error={errors.password}
+                                icon={LockClosedIcon}
+                                placeholder="********"
+                                autoComplete="current-password"
+                                onChange={(value) => setData('password', value)}
+                            />
+
                             <div className="flex items-center justify-between">
                                 <label className="flex items-center">
                                     <Checkbox
                                         name="remember"
                                         checked={data.remember}
                                         onChange={(e) => setData('remember', e.target.checked)}
-                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                        className="rounded border-green-100 text-green-700 focus:ring-lime-300 dark:border-white/10 dark:bg-[#0B2A1E]"
                                     />
-                                    <span className="ml-2 text-sm text-gray-600">
+
+                                    <span className="ml-2 text-sm text-gray-600 dark:text-green-100">
                                         Ingat saya
                                     </span>
                                 </label>
@@ -119,38 +96,72 @@ export default function Login({ status, canResetPassword }) {
                                 {canResetPassword && (
                                     <Link
                                         href={route('password.request')}
-                                        className="text-sm text-green-600 hover:text-green-500 font-medium"
+                                        className="text-sm font-semibold text-green-700 hover:text-green-800 dark:text-lime-400 dark:hover:text-lime-300"
                                     >
                                         Lupa password?
                                     </Link>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Submit Button */}
-                        <div>
                             <PrimaryButton
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150"
+                                className="flex w-full justify-center rounded-2xl bg-green-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 focus:ring-2 focus:ring-lime-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 dark:focus:ring-offset-[#123D2A]"
                                 disabled={processing}
                             >
-                                {processing ? (
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    'Masuk'
-                                )}
+                                {processing ? 'Memproses...' : 'Masuk'}
                             </PrimaryButton>
-                        </div>
-                    </form>
-
-                    {/* Additional Info */}
-                    <div className="text-center text-xs text-gray-500 mt-4">
-                        <p>Demo: admin@kebun.test / password</p>
+                        </form>
                     </div>
                 </div>
             </div>
         </GuestLayout>
+    );
+}
+
+function FormInput({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    type = 'text',
+    placeholder = '',
+    icon: Icon,
+    autoComplete,
+    autoFocus = false,
+}) {
+    return (
+        <div>
+            <label
+                htmlFor={id}
+                className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50"
+            >
+                {label}
+            </label>
+
+            <div
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
+                    }`}
+            >
+                {Icon && (
+                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />
+                )}
+
+                <TextInput
+                    id={id}
+                    type={type}
+                    name={id}
+                    value={value}
+                    autoComplete={autoComplete}
+                    isFocused={autoFocus}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-green-200/60"
+                />
+            </div>
+
+            <InputError message={error} className="mt-2" />
+        </div>
     );
 }

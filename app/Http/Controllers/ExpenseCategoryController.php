@@ -8,10 +8,25 @@ use Inertia\Inertia;
 
 class ExpenseCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = ExpenseCategory::orderBy('name')->get();
-        return Inertia::render('ExpenseCategory/Index', ['categories' => $categories]);
+        $search = trim((string) $request->query('search'));
+
+        $categories = ExpenseCategory::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+        return Inertia::render(
+            'ExpenseCategory/Index',
+            [
+                'categories' => $categories,
+                'filters' => [
+                    'search' => $search
+                ]
+            ]);
     }
 
     public function create()

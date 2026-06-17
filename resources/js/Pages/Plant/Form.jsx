@@ -40,15 +40,15 @@ export default function Form({ plant }) {
             <div className="mx-auto max-w-5xl">
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-green-700">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-green-700 dark:bg-lime-400 dark:text-green-950">
                             <SparklesIcon className="h-6 w-6" />
                         </div>
 
                         <div>
-                            <h2 className="text-xl font-bold text-green-950">
+                            <h2 className="text-xl font-bold text-green-950 dark:text-white">
                                 {isEdit ? 'Edit Tanaman' : 'Tambah Tanaman'}
                             </h2>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
                                 Kelola data tanaman, kategori, dan estimasi masa budidaya.
                             </p>
                         </div>
@@ -56,7 +56,7 @@ export default function Form({ plant }) {
 
                     <Link
                         href={route('plants.index')}
-                        className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+                        className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
                     >
                         <ArrowLeftIcon className="mr-2 h-5 w-5" />
                         Kembali
@@ -65,13 +65,13 @@ export default function Form({ plant }) {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm"
+                    className="overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#123D2A]"
                 >
-                    <div className="border-b border-green-100 bg-green-50 px-6 py-5">
-                        <h3 className="text-lg font-bold text-green-950">
+                    <div className="border-b border-green-100 bg-green-50 px-6 py-5 dark:border-white/10 dark:bg-white/10">
+                        <h3 className="text-lg font-bold text-green-950 dark:text-white">
                             Informasi Tanaman
                         </h3>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
                             Data ini menjadi dasar untuk semai, pindah tanam, dan estimasi panen.
                         </p>
                     </div>
@@ -128,17 +128,17 @@ export default function Form({ plant }) {
                         />
 
                         <div className="md:col-span-2">
-                            <div className="rounded-3xl border border-green-100 bg-green-50 p-5">
+                            <div className="rounded-3xl border border-green-100 bg-green-50 p-5 dark:border-white/10 dark:bg-[#0B2A1E]">
                                 <div className="mb-4 flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-green-700">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-green-700 dark:bg-white/10 dark:text-lime-400">
                                         <CalendarDaysIcon className="h-5 w-5" />
                                     </div>
 
                                     <div>
-                                        <h4 className="font-bold text-green-950">
+                                        <h4 className="font-bold text-green-950 dark:text-white">
                                             Estimasi Hari Budidaya
                                         </h4>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-green-100">
                                             Digunakan untuk menghitung jadwal pindah tanam dan panen.
                                         </p>
                                     </div>
@@ -191,10 +191,10 @@ export default function Form({ plant }) {
                         </div>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-3 border-t border-green-100 bg-green-50 px-6 py-5 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-3 border-t border-green-100 bg-green-50 px-6 py-5 dark:border-white/10 dark:bg-white/10 sm:flex-row sm:justify-end">
                         <Link
                             href={route('plants.index')}
-                            className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-5 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+                            className="inline-flex items-center justify-center rounded-2xl border border-green-100 bg-white px-5 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
                         >
                             Batal
                         </Link>
@@ -231,16 +231,21 @@ function FormInput({
 }) {
     return (
         <div>
-            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
-                {label} {required && <span className="text-red-500">*</span>}
+            <label
+                htmlFor={id}
+                className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50"
+            >
+                {label} {required && <span className="text-red-500 dark:text-red-300">*</span>}
             </label>
 
             <div
-                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
+                        ? 'border-red-300 dark:border-red-400/40'
+                        : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
-                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700" />
+                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />
                 )}
 
                 <input
@@ -250,12 +255,12 @@ function FormInput({
                     required={required}
                     placeholder={placeholder}
                     onChange={(e) => onChange(e.target.value)}
-                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-green-200/60"
                 />
             </div>
 
             {error && (
-                <p className="mt-2 text-sm font-medium text-red-600">
+                <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
                     {error}
                 </p>
             )}
@@ -274,26 +279,35 @@ function FormSelect({
 }) {
     return (
         <div>
-            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
+            <label
+                htmlFor={id}
+                className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50"
+            >
                 {label}
             </label>
 
             <div
-                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
+                        ? 'border-red-300 dark:border-red-400/40'
+                        : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
-                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700" />
+                    <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />
                 )}
 
                 <select
                     id={id}
-                    value={value}
+                    value={value ?? ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 focus:ring-0"
+                    className="block w-full border-0 bg-transparent px-1 py-3 text-sm text-gray-900 focus:ring-0 dark:text-white"
                 >
                     {options.map((option) => (
-                        <option key={option.value} value={option.value}>
+                        <option
+                            key={option.value}
+                            value={option.value}
+                            className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                        >
                             {option.label}
                         </option>
                     ))}
@@ -301,7 +315,7 @@ function FormSelect({
             </div>
 
             {error && (
-                <p className="mt-2 text-sm font-medium text-red-600">
+                <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
                     {error}
                 </p>
             )}
@@ -320,16 +334,21 @@ function FormTextarea({
 }) {
     return (
         <div>
-            <label htmlFor={id} className="mb-2 block text-sm font-semibold text-green-950">
+            <label
+                htmlFor={id}
+                className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50"
+            >
                 {label}
             </label>
 
             <div
-                className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 ${error ? 'border-red-300' : 'border-green-100'
+                className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
+                        ? 'border-red-300 dark:border-red-400/40'
+                        : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
-                    <Icon className="mr-2 mt-2 h-5 w-5 shrink-0 text-green-700" />
+                    <Icon className="mr-2 mt-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />
                 )}
 
                 <textarea
@@ -338,12 +357,12 @@ function FormTextarea({
                     value={value}
                     placeholder={placeholder}
                     onChange={(e) => onChange(e.target.value)}
-                    className="block w-full resize-none border-0 bg-transparent px-1 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                    className="block w-full resize-none border-0 bg-transparent px-1 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-green-200/60"
                 />
             </div>
 
             {error && (
-                <p className="mt-2 text-sm font-medium text-red-600">
+                <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
                     {error}
                 </p>
             )}

@@ -1,5 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import {
     PlusIcon,
     PencilIcon,
@@ -8,9 +9,50 @@ import {
     SparklesIcon,
     BuildingStorefrontIcon,
     ScaleIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
+import CursorPagination from '@/Components/CursorPagination';
 
-export default function Index({ varieties = [] }) {
+export default function Index({
+    varieties = { data: [] },
+    plants = [],
+    filters = {},
+}) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [plantId, setPlantId] = useState(filters.plant_id || '');
+    const [status, setStatus] = useState(filters.status || '');
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            const params = {};
+
+            if (search) params.search = search;
+            if (plantId) params.plant_id = plantId;
+            if (status) params.status = status;
+
+            router.get(route('plant-varieties.index'), params, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, plantId, status]);
+
+    const resetSearch = () => {
+        setSearch('');
+        setPlantId('');
+        setStatus('');
+
+        router.get(route('plant-varieties.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
     return (
         <AppLayout title="Daftar Varietas Tanaman">
             <div className="rounded-3xl border border-green-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#123D2A]">
@@ -39,6 +81,66 @@ export default function Index({ varieties = [] }) {
                     </Link>
                 </div>
 
+                <div className="mt-6 rounded-2xl border border-green-100 bg-green-50 p-4 dark:border-white/10 dark:bg-[#0B2A1E]">
+                    <div className="grid gap-3 lg:grid-cols-12">
+                        <div className="relative lg:col-span-5">
+                            <MagnifyingGlassIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-700 dark:text-lime-400" />
+
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Cari varietas, merek benih, estimasi hasil, atau catatan..."
+                                className="w-full rounded-2xl border border-green-100 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white dark:placeholder:text-green-200/60"
+                            />
+                        </div>
+
+                        <div className="lg:col-span-3">
+                            <select
+                                value={plantId}
+                                onChange={(e) => setPlantId(e.target.value)}
+                                className="w-full rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white"
+                            >
+                                <option value="">Semua Tanaman</option>
+                                {plants.map((plant) => (
+                                    <option
+                                        key={plant.id}
+                                        value={plant.id}
+                                        className="bg-white text-gray-900 dark:bg-[#0B2A1E] dark:text-white"
+                                    >
+                                        {plant.plant_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="lg:col-span-3">
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="w-full rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white"
+                            >
+                                <option value="">Semua Status</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Nonaktif</option>
+                            </select>
+                        </div>
+
+                        <div className="lg:col-span-1">
+                            {(search || plantId || status) && (
+                                <button
+                                    type="button"
+                                    onClick={resetSearch}
+                                    className="inline-flex w-full items-center justify-center rounded-2xl border border-green-100 bg-white px-4 py-3 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
+                                    title="Reset Filter"
+                                >
+                                    <XMarkIcon className="h-5 w-5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="mt-6 hidden overflow-hidden rounded-2xl border border-green-100 shadow-sm dark:border-white/10 md:block">
                     <table className="min-w-full divide-y divide-green-100 dark:divide-white/10">
                         <thead className="bg-green-50 dark:bg-white/10">
@@ -53,14 +155,18 @@ export default function Index({ varieties = [] }) {
                         </thead>
 
                         <tbody className="divide-y divide-green-100 bg-white dark:divide-white/10 dark:bg-[#0B2A1E]">
-                            {varieties.length === 0 ? (
+                            {varieties.data.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-4 py-10 text-center">
-                                        <EmptyState />
+                                        <EmptyState
+                                            search={search}
+                                            plantId={plantId}
+                                            status={status}
+                                        />
                                     </td>
                                 </tr>
                             ) : (
-                                varieties.map((variety) => (
+                                varieties.data.map((variety) => (
                                     <tr
                                         key={variety.id}
                                         className="transition hover:bg-green-50/60 dark:hover:bg-white/5"
@@ -125,12 +231,17 @@ export default function Index({ varieties = [] }) {
                 </div>
 
                 <div className="mt-6 space-y-3 md:hidden">
-                    {varieties.length === 0 ? (
+                    {varieties.data.length === 0 ? (
                         <div className="rounded-2xl border border-dashed border-green-200 bg-green-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
-                            <EmptyState compact />
+                            <EmptyState
+                                compact
+                                search={search}
+                                plantId={plantId}
+                                status={status}
+                            />
                         </div>
                     ) : (
-                        varieties.map((variety) => (
+                        varieties.data.map((variety) => (
                             <div
                                 key={variety.id}
                                 className="rounded-2xl border border-green-100 bg-green-50 p-4 shadow-sm dark:border-white/10 dark:bg-[#0B2A1E]"
@@ -185,6 +296,8 @@ export default function Index({ varieties = [] }) {
                         ))
                     )}
                 </div>
+
+                <CursorPagination data={varieties} />
             </div>
         </AppLayout>
     );
@@ -205,7 +318,14 @@ function StatusBadge({ status }) {
     );
 }
 
-function EmptyState({ compact = false }) {
+function EmptyState({
+    compact = false,
+    search = '',
+    plantId = '',
+    status = '',
+}) {
+    const hasFilter = search || plantId || status;
+
     return (
         <div className="mx-auto flex max-w-sm flex-col items-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-700 dark:bg-white/10 dark:text-lime-400">
@@ -213,12 +333,14 @@ function EmptyState({ compact = false }) {
             </div>
 
             <p className="mt-3 font-semibold text-green-950 dark:text-white">
-                Belum ada varietas tanaman
+                {hasFilter ? 'Varietas tanaman tidak ditemukan' : 'Belum ada varietas tanaman'}
             </p>
 
             {!compact && (
                 <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
-                    Tambahkan varietas pertama untuk melengkapi data tanaman.
+                    {hasFilter
+                        ? 'Coba gunakan kata kunci lain, pilih tanaman berbeda, atau ubah status.'
+                        : 'Tambahkan varietas pertama untuk melengkapi data tanaman.'}
                 </p>
             )}
         </div>

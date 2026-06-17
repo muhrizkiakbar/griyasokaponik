@@ -5,14 +5,55 @@ namespace App\Http\Controllers;
 use App\Models\PlantVariety;
 use App\Models\Plant;
 use App\Http\Requests\PlantVarietyRequest;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PlantVarietyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $varieties = PlantVariety::with('plant')->orderBy('variety_name')->get();
-        return Inertia::render('PlantVariety/Index', ['varieties' => $varieties]);
+        $search = trim((string) $request->query('search'));
+        $plantId = $request->query('plant_id');
+        $status = $request->query('status');
+
+        $varieties = PlantVariety::query()
+            ->with(['plant'])
+            ->when($plantId, function ($query) use ($plantId) {
+                $query->where('plant_id', $plantId);
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('variety_name', 'like', "%{$search}%")
+                        ->orWhere('seed_brand', 'like', "%{$search}%")
+                        ->orWhere('expected_yield_per_unit', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhereHas('plant', function ($plantQuery) use ($search) {
+                            $plantQuery->where('plant_name', 'like', "%{$search}%")
+                                ->orWhere('plant_code', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->latest('id')
+            ->cursorPaginate(10)
+            ->withQueryString();
+
+        $plants = Plant::query()
+            ->orderBy('plant_name')
+            ->get(['id', 'plant_name']);
+
+
+        return Inertia::render('PlantVariety/Index', [
+            'varieties' => $varieties,
+            'plants' => $plants,
+            'filters' => [
+                'search' => $search,
+                'plant_id' => $plantId,
+                'status' => $status,
+            ],
+        ]);
     }
 
     public function create()
