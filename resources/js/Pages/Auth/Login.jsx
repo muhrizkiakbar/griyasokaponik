@@ -32,8 +32,12 @@ export default function Login({ status, canResetPassword }) {
             <div className="flex min-h-screen items-center justify-center bg-[#F5F7F2] px-4 py-12 dark:bg-[#071F16] sm:px-6 lg:px-8">
                 <div className="w-full max-w-md overflow-hidden rounded-3xl border border-green-100 bg-white shadow-xl dark:border-white/10 dark:bg-[#123D2A]">
                     <div className="bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 px-8 py-8 text-center">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-lime-400 shadow-lg shadow-green-950/20">
-                            <SparklesIcon className="h-9 w-9 text-green-950" />
+                        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/95 p-2 shadow-lg shadow-green-950/20">
+                            <img
+                                src="/images/logo-auth.png"
+                                alt="Logo Hidroponik"
+                                className="h-full w-full object-contain"
+                            />
                         </div>
 
                         <h2 className="mt-5 text-3xl font-extrabold text-white">
