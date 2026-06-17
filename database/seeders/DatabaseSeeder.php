@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         //];
         $users = [
             ['name' => 'Ma rifah Evitiani', 'username' => 'evi', 'email' => 'evitianim@kebun.test', 'role' => 'admin', 'password' => Hash::make('griyasokaponik#1221')],
-            ['name' => 'M. Rizki Akbar', 'username' => 'akbar', 'email' => 'evitianim@kebun.test', 'role' => 'admin', 'password' => Hash::make('griyasokaponik#1331')],
+            ['name' => 'M. Rizki Akbar', 'username' => 'akbar', 'email' => 'akbar@kebun.test', 'role' => 'admin', 'password' => Hash::make('griyasokaponik#1331')],
         ];
         foreach ($users as $user) {
             DB::table('users')->updateOrInsert(['email' => $user['email']], $user);
