@@ -195,7 +195,7 @@ export default function Form({ varieties = [], units = [], batch }) {
                                                 { value: '', label: 'Pilih Bedengan' },
                                                 ...units.map((u) => ({
                                                     value: u.id,
-                                                    label: u.unit_code + u.unit_name,
+                                                    label: u.unit_code + " - " + u.unit_name,
                                                 })),
                                             ]}
                                         />
