@@ -9,8 +9,9 @@ use App\Http\Requests\PlantingBatchRequest;
 use App\Models\BatchAllocation;
 use Carbon\Carbon;
 use Inertia\Inertia;
-use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PlantingBatchController extends Controller
 {
@@ -105,7 +106,7 @@ class PlantingBatchController extends Controller
             'from_stage' => $oldStage,
             'to_stage' => $newStage,
             'change_date' => now(),
-            'reason' => $request->reason ?? 'Manual update by user',
+            'reason' => $request->reason ?? 'Manual update by user '. Auth::user()->name,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -121,13 +122,16 @@ class PlantingBatchController extends Controller
 
             $data = $request->validated();
             $variety = PlantVariety::with('plant')->find($data['plant_variety_id']);
+
             if ($variety && $variety->plant->typical_harvest_days) {
                 $seedingDate = Carbon::parse($data['seeding_date']);
-                $data['expected_harvest_date'] = $seedingDate->copy()->addDays($variety->plant->typical_harvest_days);
+                $batch->expected_harvest_date = $seedingDate->copy()->addDays($variety->plant->typical_harvest_days);
+                $batch->save();
             }
             // Jika user mengirim manual, timpa
             if ($request->filled('expected_harvest_date')) {
-                $data['expected_harvest_date'] = $request->expected_harvest_date;
+                $batch->expected_harvest_date = $request->expected_harvest_date;
+                $batch->save();
             }
 
 

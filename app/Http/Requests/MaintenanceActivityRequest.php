@@ -18,7 +18,7 @@ class MaintenanceActivityRequest extends FormRequest
             'activity_type' => 'required|string|max:50|in:watering,fertilizing,spraying,pruning,ppm_check,ph_check,other',
             'activity_date' => 'required|date',
             'description' => 'nullable|string',
-            'cost' => 'nullable|numeric|min:0',
+            'cost' => 'required|numeric|min:0',
         ];
     }
 

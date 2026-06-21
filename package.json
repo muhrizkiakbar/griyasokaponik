@@ -24,7 +24,9 @@
     "dependencies": {
         "@heroicons/react": "^2.2.0",
         "axios": "^1.17.0",
+        "date-fns": "^4.4.0",
         "dayjs": "^1.11.21",
+        "react-datepicker": "^9.1.0",
         "react-router-dom": "^7.17.0"
     }
 }

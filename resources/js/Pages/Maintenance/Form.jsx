@@ -10,6 +10,7 @@ import {
     BanknotesIcon,
     SparklesIcon,
 } from '@heroicons/react/24/outline';
+import FormDatePicker from '@/Components/FormDatePicker';
 
 const activityTypes = [
     { value: 'watering', label: '💧 Penyiraman' },
@@ -112,9 +113,8 @@ export default function Form({ batches = [], activity }) {
                             options={activityTypes}
                         />
 
-                        <FormInput
+                        <FormDatePicker
                             id="activity_date"
-                            type="date"
                             label="Tanggal"
                             value={data.activity_date}
                             error={errors.activity_date}
@@ -126,7 +126,7 @@ export default function Form({ batches = [], activity }) {
                         <FormInput
                             id="cost"
                             type="number"
-                            step="0.01"
+                            step="1"
                             label="Biaya"
                             value={data.cost}
                             error={errors.cost}
@@ -200,8 +200,8 @@ function FormInput({
 
             <div
                 className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
@@ -256,8 +256,8 @@ function FormSelect({
 
             <div
                 className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
@@ -312,8 +312,8 @@ function FormTextarea({
 
             <div
                 className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (

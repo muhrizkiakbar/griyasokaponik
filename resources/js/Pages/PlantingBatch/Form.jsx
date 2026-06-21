@@ -11,6 +11,7 @@ import {
     DocumentTextIcon,
     Squares2X2Icon,
 } from '@heroicons/react/24/outline';
+import FormDatePicker from '@/Components/FormDatePicker'
 
 export default function Form({ varieties = [], units = [], batch }) {
     const isEdit = !!batch;
@@ -110,9 +111,8 @@ export default function Form({ varieties = [], units = [], batch }) {
                             ]}
                         />
 
-                        <FormInput
+                        <FormDatePicker
                             id="seeding_date"
-                            type="date"
                             label="Tanggal Semai"
                             value={data.seeding_date}
                             error={errors.seeding_date}
@@ -133,9 +133,8 @@ export default function Form({ varieties = [], units = [], batch }) {
                             onChange={(value) => setData('seed_quantity', value)}
                         />
 
-                        <FormInput
+                        <FormDatePicker
                             id="expected_transplant_date"
-                            type="date"
                             label="Estimasi Pindah Tanam"
                             value={data.expected_transplant_date}
                             error={errors.expected_transplant_date}
@@ -143,9 +142,8 @@ export default function Form({ varieties = [], units = [], batch }) {
                             onChange={(value) => setData('expected_transplant_date', value)}
                         />
 
-                        <FormInput
+                        <FormDatePicker
                             id="expected_harvest_date"
-                            type="date"
                             label="Estimasi Panen"
                             value={data.expected_harvest_date}
                             error={errors.expected_harvest_date}

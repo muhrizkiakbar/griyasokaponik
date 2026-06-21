@@ -12,6 +12,8 @@ import {
     SparklesIcon,
     DocumentTextIcon,
 } from '@heroicons/react/24/outline';
+import FormDatePicker from '@/Components/FormDatePicker';
+import { formatDate } from '@/utils/format';
 
 export default function Form({ batches = [], selectedBatch, harvest }) {
     const isEdit = !!harvest;
@@ -38,7 +40,7 @@ export default function Form({ batches = [], selectedBatch, harvest }) {
     const batchOptions = batches.map((batch) => ({
         id: batch.id,
         value: batch.id,
-        label: `${batch.batch_code} - ${batch.plant_variety?.plant?.plant_name || '-'} (${batch.plant_variety?.variety_name || '-'}) - Estimasi: ${batch.expected_harvest_date || '-'}`,
+        label: `${batch.batch_code} - ${batch.plant_variety?.plant?.plant_name || '-'} (${batch.plant_variety?.variety_name || '-'}) - Estimasi: ${formatDate(batch.expected_harvest_date) || '-'}`,
     }));
 
     return (
@@ -111,13 +113,11 @@ export default function Form({ batches = [], selectedBatch, harvest }) {
                             )}
                         </div>
 
-                        <FormInput
+                        <FormDatePicker
                             id="harvest_date"
-                            type="date"
                             label="Tanggal Panen"
                             value={data.harvest_date}
                             error={errors.harvest_date}
-                            required
                             icon={CalendarDaysIcon}
                             onChange={(value) => setData('harvest_date', value)}
                         />

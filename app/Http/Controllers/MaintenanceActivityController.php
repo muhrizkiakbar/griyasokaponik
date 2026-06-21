@@ -41,6 +41,7 @@ class MaintenanceActivityController extends Controller
 
         $batches = PlantingBatch::query()
             ->latest('id')
+            ->limit(24)
             ->get(['id', 'batch_code']);
 
         return Inertia::render(

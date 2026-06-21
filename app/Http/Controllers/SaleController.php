@@ -7,8 +7,8 @@ use App\Models\Customer;
 use App\Models\Harvest;
 use App\Http\Requests\SaleRequest;
 use Inertia\Inertia;
-use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -68,6 +68,7 @@ class SaleController extends Controller
         $customers = Customer::orderBy('name')->get();
         $harvests = Harvest::with('plantingBatch.plantVariety.plant')
             ->orderBy('harvest_date', 'desc')
+            ->limit(10)
             ->get();
         return Inertia::render('Sale/Form', [
             'customers' => $customers,
@@ -79,9 +80,25 @@ class SaleController extends Controller
     {
         DB::transaction(function () use ($request) {
             $items = $request->items;
-            $subtotal = collect($items)->sum(fn($item) => $item['quantity'] * $item['price']);
-            $discount = $request->discount ?? 0;
-            $grandTotal = $subtotal - $discount;
+
+            $subtotal = collect($items)->sum(function ($item) {
+                return (float) $item['quantity'] * (float) $item['price'];
+            });
+
+            $discount = (float) ($request->discount ?? 0);
+            $grandTotal = max($subtotal - $discount, 0);
+
+            $paidAmount = match ($request->payment_status) {
+                'lunas' => $grandTotal,
+                'DP' => min((float) ($request->paid_amount ?? 0), $grandTotal),
+                default => 0,
+            };
+
+            $remainingAmount = max($grandTotal - $paidAmount, 0);
+
+            $paymentStatus = $remainingAmount <= 0
+                ? 'lunas'
+                : $request->payment_status;
 
             $sale = Sale::create([
                 'sale_number' => $request->sale_number,
@@ -90,7 +107,10 @@ class SaleController extends Controller
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'grand_total' => $grandTotal,
-                'payment_status' => $request->payment_status,
+                'paid_amount' => $paidAmount,
+                'remaining_amount' => $remainingAmount,
+                'payment_status' => $paymentStatus,
+                'paid_at' => $paymentStatus === 'lunas' ? now() : null,
                 'notes' => $request->notes,
             ]);
 
@@ -99,12 +119,14 @@ class SaleController extends Controller
                     'harvest_id' => $item['harvest_id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                    'total' => $item['quantity'] * $item['price'],
+                    'total' => (float) $item['quantity'] * (float) $item['price'],
                 ]);
             }
         });
 
-        return redirect()->route('sales.index')->with('success', 'Penjualan berhasil dicatat.');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Penjualan berhasil dicatat.');
     }
 
     public function show(Sale $sale)
@@ -126,6 +148,22 @@ class SaleController extends Controller
     {
         // Update sale – jika diperlukan
         abort(404);
+    }
+
+    public function payOff(Sale $sale)
+    {
+        if ($sale->payment_status === 'lunas') {
+            return back()->with('success', 'Penjualan sudah lunas.');
+        }
+
+        $sale->update([
+            'paid_amount' => $sale->grand_total,
+            'remaining_amount' => 0,
+            'payment_status' => 'lunas',
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', 'Penjualan berhasil dilunasi.');
     }
 
     public function destroy(Sale $sale)

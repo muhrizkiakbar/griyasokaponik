@@ -13,6 +13,7 @@ import {
     BanknotesIcon,
     DocumentTextIcon,
 } from '@heroicons/react/24/outline';
+import SearchableSelect from '@/Components/SearchableSelect';
 
 export default function Create({ customers = [], harvests = [] }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -21,9 +22,25 @@ export default function Create({ customers = [], harvests = [] }) {
         sale_date: new Date().toISOString().split('T')[0],
         items: [{ harvest_id: '', quantity: 1, price: 0 }],
         discount: 0,
+        paid_amount: 0,
         payment_status: 'belum bayar',
         notes: '',
     });
+
+    const subtotal = data.items.reduce((sum, item) => {
+        return sum + Number(item.quantity || 0) * Number(item.price || 0);
+    }, 0);
+
+    const grandTotal = Math.max(subtotal - Number(data.discount || 0), 0);
+
+    const paidAmount =
+        data.payment_status === 'lunas'
+            ? grandTotal
+            : data.payment_status === 'belum bayar'
+                ? 0
+                : Number(data.paid_amount || 0);
+
+    const remainingAmount = Math.max(grandTotal - paidAmount, 0);
 
     const addItem = () => {
         setData('items', [
@@ -57,14 +74,32 @@ export default function Create({ customers = [], harvests = [] }) {
         setData('items', newItems);
     };
 
-    const subtotal = data.items.reduce((sum, item) => {
-        return sum + Number(item.quantity || 0) * Number(item.price || 0);
-    }, 0);
+    const handlePaymentStatusChange = (value) => {
+        setData((previous) => ({
+            ...previous,
+            payment_status: value,
+            paid_amount:
+                value === 'lunas'
+                    ? grandTotal
+                    : value === 'belum bayar'
+                        ? 0
+                        : previous.paid_amount,
+        }));
+    };
 
-    const grandTotal = subtotal - Number(data.discount || 0);
+    const handlePaidAmountChange = (value) => {
+        const amount = Math.min(Number(value || 0), grandTotal);
+        setData('paid_amount', amount);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        setData((previous) => ({
+            ...previous,
+            paid_amount: paidAmount,
+        }));
+
         post(route('sales.store'));
     };
 
@@ -105,7 +140,7 @@ export default function Create({ customers = [], harvests = [] }) {
                             Informasi Transaksi
                         </h3>
                         <p className="mt-1 text-sm text-gray-500 dark:text-green-100">
-                            Lengkapi nomor transaksi, customer, tanggal, dan item penjualan.
+                            Jika status DP atau Belum Bayar, transaksi bisa dilunasi nanti.
                         </p>
                     </div>
 
@@ -133,22 +168,30 @@ export default function Create({ customers = [], harvests = [] }) {
                         />
 
                         <div className="md:col-span-2">
-                            <FormSelect
-                                id="customer_id"
-                                label="Customer"
+                            <label className="mb-2 block text-sm font-semibold text-green-950 dark:text-green-50">
+                                Customer
+                                <span className="text-red-500 dark:text-red-300"> *</span>
+                            </label>
+
+                            <SearchableSelect
                                 value={data.customer_id}
-                                error={errors.customer_id}
+                                options={customers.map((customer) => ({
+                                    id: customer.id,
+                                    label: customer.name + " - " + customer.phone,
+                                }))}
+                                labelKey="label"
+                                valueKey="id"
                                 required
-                                icon={UserGroupIcon}
-                                onChange={(value) => setData('customer_id', value)}
-                                options={[
-                                    { value: '', label: 'Pilih Customer' },
-                                    ...customers.map((c) => ({
-                                        value: c.id,
-                                        label: c.name || c.customer_name,
-                                    })),
-                                ]}
+                                placeholder="Cari customer..."
+                                className="w-full"
+                                onChange={(e) => setData('customer_id', e.target.value)}
                             />
+
+                            {errors.customer_id && (
+                                <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
+                                    {errors.customer_id}
+                                </p>
+                            )}
                         </div>
 
                         <div className="md:col-span-2">
@@ -265,13 +308,34 @@ export default function Create({ customers = [], harvests = [] }) {
                             value={data.payment_status}
                             error={errors.payment_status}
                             icon={BanknotesIcon}
-                            onChange={(value) => setData('payment_status', value)}
+                            onChange={handlePaymentStatusChange}
                             options={[
-                                { value: 'belum bayar', label: 'Belum Bayar' },
-                                { value: 'DP', label: 'DP' },
                                 { value: 'lunas', label: 'Lunas' },
+                                { value: 'belum bayar', label: 'Belum Bayar / Belum Lunas' },
+                                { value: 'DP', label: 'DP' },
                             ]}
                         />
+
+                        {data.payment_status === 'DP' && (
+                            <FormInput
+                                id="paid_amount"
+                                type="number"
+                                label="Nominal DP"
+                                value={data.paid_amount}
+                                error={errors.paid_amount}
+                                icon={BanknotesIcon}
+                                placeholder="Contoh: 50000"
+                                onChange={handlePaidAmountChange}
+                            />
+                        )}
+
+                        {data.payment_status === 'belum bayar' && (
+                            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 dark:border-amber-400/20 dark:bg-amber-500/10">
+                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                                    Transaksi belum lunas. Pelunasan bisa dilakukan nanti dari halaman daftar/detail penjualan.
+                                </p>
+                            </div>
+                        )}
 
                         <div className="md:col-span-2">
                             <FormTextarea
@@ -287,10 +351,12 @@ export default function Create({ customers = [], harvests = [] }) {
 
                         <div className="md:col-span-2">
                             <div className="rounded-3xl border border-green-100 bg-green-50 p-5 dark:border-white/10 dark:bg-[#0B2A1E]">
-                                <div className="grid gap-4 md:grid-cols-3">
+                                <div className="grid gap-4 md:grid-cols-5">
                                     <SummaryItem label="Subtotal" value={subtotal} />
                                     <SummaryItem label="Diskon" value={data.discount} />
-                                    <SummaryItem label="Grand Total" value={grandTotal} highlight />
+                                    <SummaryItem label="Grand Total" value={grandTotal} />
+                                    <SummaryItem label="Dibayar" value={paidAmount} />
+                                    <SummaryItem label="Sisa Bayar" value={remainingAmount} highlight />
                                 </div>
                             </div>
                         </div>
@@ -323,21 +389,15 @@ function SummaryItem({ label, value, highlight = false }) {
     return (
         <div
             className={`rounded-2xl p-4 ${highlight
-                    ? 'bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 text-white'
-                    : 'border border-green-100 bg-white dark:border-white/10 dark:bg-[#123D2A]'
+                ? 'bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 text-white'
+                : 'border border-green-100 bg-white dark:border-white/10 dark:bg-[#123D2A]'
                 }`}
         >
-            <p
-                className={`text-sm font-medium ${highlight ? 'text-green-50' : 'text-gray-500 dark:text-green-100'
-                    }`}
-            >
+            <p className={`text-sm font-medium ${highlight ? 'text-green-50' : 'text-gray-500 dark:text-green-100'}`}>
                 {label}
             </p>
 
-            <p
-                className={`mt-2 text-xl font-extrabold ${highlight ? 'text-white' : 'text-green-950 dark:text-white'
-                    }`}
-            >
+            <p className={`mt-2 text-xl font-extrabold ${highlight ? 'text-white' : 'text-green-950 dark:text-white'}`}>
                 Rp {formatNumber(value || 0)}
             </p>
         </div>
@@ -361,12 +421,7 @@ function FormInput({
                 {label} {required && <span className="text-red-500 dark:text-red-300">*</span>}
             </label>
 
-            <div
-                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
-                    }`}
-            >
+            <div className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'}`}>
                 {Icon && <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
 
                 <input
@@ -401,12 +456,7 @@ function FormSelect({
                 {label} {required && <span className="text-red-500 dark:text-red-300">*</span>}
             </label>
 
-            <div
-                className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
-                    }`}
-            >
+            <div className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'}`}>
                 {Icon && <Icon className="mr-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
 
                 <select
@@ -448,12 +498,7 @@ function FormTextarea({
                 {label}
             </label>
 
-            <div
-                className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
-                    }`}
-            >
+            <div className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error ? 'border-red-300 dark:border-red-400/40' : 'border-green-100 dark:border-white/10'}`}>
                 {Icon && <Icon className="mr-2 mt-2 h-5 w-5 shrink-0 text-green-700 dark:text-lime-400" />}
 
                 <textarea

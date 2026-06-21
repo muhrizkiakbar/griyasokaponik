@@ -68,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Manajemen Penjualan
     Route::resource('sales', SaleController::class);
+    Route::post('/sales/{sale}/pay-off', [SaleController::class, 'payOff'])
+        ->name('sales.pay-off');
 
     // Master Data - Kategori Pengeluaran
     Route::resource('expense-categories', ExpenseCategoryController::class);

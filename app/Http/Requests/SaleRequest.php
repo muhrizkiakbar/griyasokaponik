@@ -19,6 +19,7 @@ class SaleRequest extends FormRequest
             'sale_number' => 'required|string|max:100|unique:sales,sale_number,' . $id,
             'customer_id' => 'required|exists:customers,id',
             'sale_date' => 'required|date',
+            'paid_amount' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.harvest_id' => 'required|exists:harvests,id',
             'items.*.quantity' => 'required|numeric|min:0.01',

@@ -69,7 +69,7 @@ class HarvestController extends Controller
     public function create(Request $request)
     {
         $batches = PlantingBatch::where('status', 'active')
-            ->where('expected_harvest_date', '<=', Carbon::now()->subDays(5))
+            ->where('expected_harvest_date', '<=', Carbon::now())
             ->with('plantVariety.plant')
             ->orderBy('expected_harvest_date')
             ->get();

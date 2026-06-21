@@ -11,6 +11,7 @@ import {
     HashtagIcon,
     MagnifyingGlassIcon,
     XMarkIcon,
+    CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { formatNumber, formatDate } from '@/utils/format';
 import CursorPagination from '@/Components/CursorPagination';
@@ -54,6 +55,18 @@ export default function Index({
         });
     };
 
+    const payOff = (sale) => {
+        if (!confirm(`Lunasi penjualan ${sale.sale_number}?`)) return;
+
+        router.post(
+            route('sales.pay-off', sale.id),
+            {},
+            {
+                preserveScroll: true,
+            }
+        );
+    };
+
     return (
         <AppLayout title="Penjualan">
             <div className="rounded-3xl border border-green-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#123D2A]">
@@ -91,7 +104,7 @@ export default function Index({
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Cari nomor, tanggal, subtotal, diskon, total, catatan, atau tanggal input..."
+                                placeholder="Cari nomor, tanggal, total, dibayar, sisa bayar, catatan..."
                                 className="w-full rounded-2xl border border-green-100 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-lime-300 focus:ring-lime-300 dark:border-white/10 dark:bg-[#123D2A] dark:text-white dark:placeholder:text-green-200/60"
                             />
                         </div>
@@ -143,7 +156,7 @@ export default function Index({
                     </div>
                 </div>
 
-                <div className="mt-6 hidden overflow-hidden rounded-2xl border border-green-100 shadow-sm dark:border-white/10 md:block">
+                <div className="mt-6 hidden overflow-hidden rounded-2xl border border-green-100 shadow-sm dark:border-white/10 lg:block">
                     <table className="min-w-full divide-y divide-green-100 dark:divide-white/10">
                         <thead className="bg-green-50 dark:bg-white/10">
                             <tr>
@@ -151,15 +164,17 @@ export default function Index({
                                 <TableHead>Tanggal</TableHead>
                                 <TableHead>Customer</TableHead>
                                 <TableHead>Total</TableHead>
+                                <TableHead>Dibayar</TableHead>
+                                <TableHead>Sisa</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead align="right">Detail</TableHead>
+                                <TableHead align="right">Aksi</TableHead>
                             </tr>
                         </thead>
 
                         <tbody className="divide-y divide-green-100 bg-white dark:divide-white/10 dark:bg-[#0B2A1E]">
                             {sales.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-4 py-10 text-center">
+                                    <td colSpan="8" className="px-4 py-10 text-center">
                                         <EmptyState
                                             search={search}
                                             customerId={customerId}
@@ -181,24 +196,27 @@ export default function Index({
                                         </TableCell>
 
                                         <TableCell>
-                                            <div className="inline-flex items-center gap-2 text-gray-600 dark:text-green-100">
-                                                <CalendarDaysIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
+                                            <InfoText icon={CalendarDaysIcon}>
                                                 {formatDate(sale.sale_date)}
-                                            </div>
+                                            </InfoText>
                                         </TableCell>
 
                                         <TableCell>
-                                            <div className="inline-flex items-center gap-2 text-gray-600 dark:text-green-100">
-                                                <UserGroupIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
+                                            <InfoText icon={UserGroupIcon}>
                                                 {sale.customer?.name || '-'}
-                                            </div>
+                                            </InfoText>
                                         </TableCell>
 
                                         <TableCell>
-                                            <div className="inline-flex items-center gap-2 font-semibold text-green-950 dark:text-white">
-                                                <BanknotesIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
-                                                Rp {formatNumber(sale.grand_total || 0)}
-                                            </div>
+                                            <MoneyText value={sale.grand_total} strong />
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <MoneyText value={sale.paid_amount} />
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <MoneyText value={sale.remaining_amount} danger={Number(sale.remaining_amount || 0) > 0} />
                                         </TableCell>
 
                                         <TableCell>
@@ -206,10 +224,23 @@ export default function Index({
                                         </TableCell>
 
                                         <TableCell align="right">
-                                            <div className="flex justify-end">
+                                            <div className="flex justify-end gap-2">
+                                                {canPayOff(sale) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => payOff(sale)}
+                                                        className="inline-flex h-9 items-center justify-center rounded-xl border border-green-100 bg-green-50 px-3 text-xs font-semibold text-green-700 transition hover:bg-green-100 dark:border-lime-400/20 dark:bg-lime-400/10 dark:text-lime-400 dark:hover:bg-lime-400/20"
+                                                        title="Lunasi"
+                                                    >
+                                                        <CheckCircleIcon className="mr-1 h-4 w-4" />
+                                                        Lunasi
+                                                    </button>
+                                                )}
+
                                                 <Link
                                                     href={route('sales.show', sale.id)}
                                                     className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-green-100 bg-white text-green-700 transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-lime-400 dark:hover:bg-white/20"
+                                                    title="Detail"
                                                 >
                                                     <EyeIcon className="h-4 w-4" />
                                                 </Link>
@@ -222,7 +253,7 @@ export default function Index({
                     </table>
                 </div>
 
-                <div className="mt-6 space-y-3 md:hidden">
+                <div className="mt-6 space-y-3 lg:hidden">
                     {sales.data.length === 0 ? (
                         <div className="rounded-2xl border border-dashed border-green-200 bg-green-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
                             <EmptyState
@@ -255,21 +286,33 @@ export default function Index({
                                                 {formatDate(sale.sale_date)}
                                             </p>
 
-                                            <p className="flex items-center gap-2 font-semibold text-green-950 dark:text-white">
-                                                <BanknotesIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
-                                                Rp {formatNumber(sale.grand_total || 0)}
-                                            </p>
+                                            <MobileMoneyRow label="Total" value={sale.grand_total} />
+                                            <MobileMoneyRow label="Dibayar" value={sale.paid_amount} />
+                                            <MobileMoneyRow label="Sisa" value={sale.remaining_amount} danger />
 
                                             <PaymentBadge status={sale.payment_status} />
                                         </div>
                                     </div>
 
-                                    <Link
-                                        href={route('sales.show', sale.id)}
-                                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm dark:bg-white/10 dark:text-lime-400"
-                                    >
-                                        <EyeIcon className="h-4 w-4" />
-                                    </Link>
+                                    <div className="flex shrink-0 flex-col gap-2">
+                                        <Link
+                                            href={route('sales.show', sale.id)}
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm dark:bg-white/10 dark:text-lime-400"
+                                        >
+                                            <EyeIcon className="h-4 w-4" />
+                                        </Link>
+
+                                        {canPayOff(sale) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => payOff(sale)}
+                                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-green-700 text-white shadow-sm hover:bg-green-800 dark:bg-lime-400 dark:text-green-950"
+                                                title="Lunasi"
+                                            >
+                                                <CheckCircleIcon className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -279,6 +322,53 @@ export default function Index({
                 <CursorPagination data={sales} />
             </div>
         </AppLayout>
+    );
+}
+
+function canPayOff(sale) {
+    return (
+        sale.payment_status !== 'lunas' &&
+        Number(sale.remaining_amount || 0) > 0
+    );
+}
+
+function InfoText({ icon: Icon, children }) {
+    return (
+        <div className="inline-flex items-center gap-2 text-gray-600 dark:text-green-100">
+            <Icon className="h-4 w-4 text-green-700 dark:text-lime-400" />
+            {children}
+        </div>
+    );
+}
+
+function MoneyText({ value, strong = false, danger = false }) {
+    return (
+        <div
+            className={[
+                'inline-flex items-center gap-2',
+                strong ? 'font-semibold text-green-950 dark:text-white' : 'text-gray-600 dark:text-green-100',
+                danger ? 'font-semibold text-red-600 dark:text-red-300' : '',
+            ].join(' ')}
+        >
+            <BanknotesIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
+            Rp {formatNumber(value || 0)}
+        </div>
+    );
+}
+
+function MobileMoneyRow({ label, value, danger = false }) {
+    return (
+        <p
+            className={[
+                'flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 dark:bg-white/10',
+                danger && Number(value || 0) > 0
+                    ? 'text-red-600 dark:text-red-300'
+                    : 'text-gray-600 dark:text-green-100',
+            ].join(' ')}
+        >
+            <span>{label}</span>
+            <span className="font-semibold">Rp {formatNumber(value || 0)}</span>
+        </p>
     );
 }
 
@@ -345,7 +435,9 @@ function EmptyState({
 
 function TableHead({ children, align = 'left' }) {
     return (
-        <th className={`px-4 py-3 text-${align} text-xs font-bold uppercase tracking-wider text-green-950 dark:text-green-50`}>
+        <th
+            className={`px-4 py-3 text-${align} text-xs font-bold uppercase tracking-wider text-green-950 dark:text-green-50`}
+        >
             {children}
         </th>
     );

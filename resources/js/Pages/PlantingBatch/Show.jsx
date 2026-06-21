@@ -9,10 +9,12 @@ import {
     ClipboardDocumentListIcon,
     Squares2X2Icon,
     ArrowRightIcon,
+    CalendarDaysIcon,
     ScissorsIcon,
     ClockIcon,
     BeakerIcon,
 } from '@heroicons/react/24/outline';
+import FormDatePicker from '@/Components/FormDatePicker';
 
 const stageLabels = {
     seedling: '🌱 Semai',
@@ -67,6 +69,7 @@ export default function Show({ batch, growingUnits = [] }) {
         post: postMove,
         processing: moveProcessing,
         reset: resetMove,
+        errors
     } = useForm({
         from_unit_id: '',
         to_unit_id: '',
@@ -207,7 +210,14 @@ export default function Show({ batch, growingUnits = [] }) {
                                 ))}
                             </SelectInput>
 
-                            <TextInput type="date" value={allocData.allocation_date} onChange={(e) => setAllocData('allocation_date', e.target.value)} required />
+                            <FormDatePicker
+                                id="allocation_date"
+                                value={allocData.allocation_date}
+                                error={errors.allocation_date}
+                                icon={CalendarDaysIcon}
+                                onChange={(value) => setAllocData('allocation_date', value)}
+                            />
+
                             <TextInput type="number" value={allocData.quantity} onChange={(e) => setAllocData('quantity', e.target.value)} placeholder="Jumlah" required />
 
                             <button
@@ -261,7 +271,15 @@ export default function Show({ batch, growingUnits = [] }) {
                             </SelectInput>
 
                             <TextInput type="number" value={moveData.quantity} onChange={(e) => setMoveData('quantity', e.target.value)} placeholder="Jumlah" required />
-                            <TextInput type="date" value={moveData.movement_date} onChange={(e) => setMoveData('movement_date', e.target.value)} required />
+
+                            <FormDatePicker
+                                id="movement_date"
+                                value={moveData.movement_date}
+                                error={errors.movement_date}
+                                icon={CalendarDaysIcon}
+                                onChange={(value) => setMoveData('expected_harvest_date', value)}
+                            />
+
                             <TextInput value={moveData.notes} onChange={(e) => setMoveData('notes', e.target.value)} placeholder="Catatan" className="sm:col-span-2" />
 
                             <button
