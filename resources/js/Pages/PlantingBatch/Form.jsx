@@ -195,7 +195,7 @@ export default function Form({ varieties = [], units = [], batch }) {
                                                 { value: '', label: 'Pilih Bedengan' },
                                                 ...units.map((u) => ({
                                                     value: u.id,
-                                                    label: u.unit_name,
+                                                    label: u.unit_code + u.unit_name,
                                                 })),
                                             ]}
                                         />
@@ -265,8 +265,8 @@ function FormInput({
 
             <div
                 className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
@@ -314,8 +314,8 @@ function FormSelect({
 
             <div
                 className={`flex items-center rounded-2xl border bg-white px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
@@ -370,8 +370,8 @@ function FormTextarea({
 
             <div
                 className={`flex rounded-2xl border bg-white px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-lime-300 dark:bg-[#0B2A1E] ${error
-                        ? 'border-red-300 dark:border-red-400/40'
-                        : 'border-green-100 dark:border-white/10'
+                    ? 'border-red-300 dark:border-red-400/40'
+                    : 'border-green-100 dark:border-white/10'
                     }`}
             >
                 {Icon && (
