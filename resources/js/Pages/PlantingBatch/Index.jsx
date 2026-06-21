@@ -13,6 +13,7 @@ import {
     XMarkIcon,
 } from '@heroicons/react/24/outline';
 import CursorPagination from '@/Components/CursorPagination';
+import { formatDate } from '@/utils/format';
 
 const stageOptions = {
     planned: 'Direncanakan',
@@ -244,7 +245,7 @@ export default function Index({
                                         <TableCell>
                                             <div className="inline-flex items-center gap-2 text-gray-600 dark:text-green-100">
                                                 <CalendarDaysIcon className="h-4 w-4 text-green-700 dark:text-lime-400" />
-                                                {batch.seeding_date || '-'}
+                                                {formatDate(batch.seeding_date) || '-'}
                                             </div>
                                         </TableCell>
 
