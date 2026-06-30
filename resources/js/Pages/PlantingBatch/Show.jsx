@@ -259,14 +259,14 @@ export default function Show({ batch, growingUnits = [] }) {
                             <SelectInput value={moveData.from_unit_id} onChange={(e) => setMoveData('from_unit_id', e.target.value)}>
                                 <option value="">Dari Bedengan</option>
                                 {growingUnits.map((unit) => (
-                                    <option key={unit.id} value={unit.id}>{unit.unit_name}</option>
+                                    <option key={unit.id} value={unit.id}>{unit.unit_code} - {unit.unit_name}</option>
                                 ))}
                             </SelectInput>
 
                             <SelectInput value={moveData.to_unit_id} onChange={(e) => setMoveData('to_unit_id', e.target.value)} required>
                                 <option value="">Ke Bedengan</option>
                                 {growingUnits.map((unit) => (
-                                    <option key={unit.id} value={unit.id}>{unit.unit_name}</option>
+                                    <option key={unit.id} value={unit.id}>{unit.unit_code} - {unit.unit_name}</option>
                                 ))}
                             </SelectInput>
 
