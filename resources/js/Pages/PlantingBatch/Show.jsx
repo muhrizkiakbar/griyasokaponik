@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router, useForm, Link } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { formatDate, formatNumber } from '@/utils/format';
 import {
@@ -13,6 +13,9 @@ import {
     ScissorsIcon,
     ClockIcon,
     BeakerIcon,
+    SparklesIcon,
+    BanknotesIcon,
+    DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import FormDatePicker from '@/Components/FormDatePicker';
 
@@ -25,12 +28,13 @@ const stageLabels = {
 };
 
 const activityLabels = {
-    watering: 'Penyiraman',
-    fertilizing: 'Pemupukan',
-    spraying: 'Penyemprotan',
-    pruning: 'Pemangkasan',
-    ppm_check: 'Cek PPM',
-    ph_check: 'Cek pH',
+    watering: '💧 Penyiraman',
+    fertilizing: '🌱 Pemupukan',
+    spraying: '🧴 Penyemprotan',
+    pruning: '✂️ Pemangkasan',
+    ppm_check: '📊 Cek PPM',
+    ph_check: '🧪 Cek pH',
+    other: '📝 Lainnya',
 };
 
 export default function Show({ batch, growingUnits = [] }) {
@@ -38,6 +42,7 @@ export default function Show({ batch, growingUnits = [] }) {
     const [selectedStage, setSelectedStage] = useState(batch.current_stage);
     const [showAllocationForm, setShowAllocationForm] = useState(false);
     const [showMovementForm, setShowMovementForm] = useState(false);
+    const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
 
     const plantCategory = batch.plant_variety?.plant?.category;
     const isFruit = plantCategory === 'Fruit';
@@ -57,6 +62,7 @@ export default function Show({ batch, growingUnits = [] }) {
         post: postAlloc,
         processing: allocProcessing,
         reset: resetAlloc,
+        errors: allocErrors,
     } = useForm({
         growing_unit_id: '',
         allocation_date: new Date().toISOString().split('T')[0],
@@ -69,7 +75,7 @@ export default function Show({ batch, growingUnits = [] }) {
         post: postMove,
         processing: moveProcessing,
         reset: resetMove,
-        errors
+        errors: moveErrors,
     } = useForm({
         from_unit_id: '',
         to_unit_id: '',
@@ -77,6 +83,21 @@ export default function Show({ batch, growingUnits = [] }) {
         quantity: '',
         movement_date: new Date().toISOString().split('T')[0],
         notes: '',
+    });
+
+    const {
+        data: maintenanceData,
+        setData: setMaintenanceData,
+        post: postMaintenance,
+        processing: maintenanceProcessing,
+        reset: resetMaintenance,
+        errors: maintenanceErrors,
+    } = useForm({
+        planting_batch_id: batch.id,
+        activity_type: 'watering',
+        activity_date: new Date().toISOString().split('T')[0],
+        description: '',
+        cost: '',
     });
 
     const handleStageChange = (newStage) => {
@@ -107,11 +128,11 @@ export default function Show({ batch, growingUnits = [] }) {
     };
 
     const handleDeleteAllocation = (id) => {
-        if (confirm('Hapus alokasi ini?')) {
-            router.delete(route('batch-allocations.destroy', id), {
-                preserveScroll: true,
-            });
-        }
+        if (!confirm('Hapus alokasi ini?')) return;
+
+        router.delete(route('batch-allocations.destroy', id), {
+            preserveScroll: true,
+        });
     };
 
     const handleAddMovement = (e) => {
@@ -122,6 +143,19 @@ export default function Show({ batch, growingUnits = [] }) {
             onSuccess: () => {
                 resetMove();
                 setShowMovementForm(false);
+            },
+        });
+    };
+
+    const handleAddMaintenance = (e) => {
+        e.preventDefault();
+
+        postMaintenance(route('maintenance.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                resetMaintenance();
+                setMaintenanceData('planting_batch_id', batch.id);
+                setShowMaintenanceForm(false);
             },
         });
     };
@@ -165,6 +199,7 @@ export default function Show({ batch, growingUnits = [] }) {
 
                             {nextStage && (
                                 <button
+                                    type="button"
                                     onClick={() => handleStageChange(nextStage)}
                                     disabled={isUpdating}
                                     className="inline-flex items-center justify-center rounded-2xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
@@ -201,7 +236,11 @@ export default function Show({ batch, growingUnits = [] }) {
                 >
                     {showAllocationForm && (
                         <form onSubmit={handleAddAllocation} className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-4">
-                            <SelectInput value={allocData.growing_unit_id} onChange={(e) => setAllocData('growing_unit_id', e.target.value)} required>
+                            <SelectInput
+                                value={allocData.growing_unit_id}
+                                onChange={(e) => setAllocData('growing_unit_id', e.target.value)}
+                                required
+                            >
                                 <option value="">Pilih Bedengan</option>
                                 {growingUnits.map((unit) => (
                                     <option key={unit.id} value={unit.id}>
@@ -213,12 +252,18 @@ export default function Show({ batch, growingUnits = [] }) {
                             <FormDatePicker
                                 id="allocation_date"
                                 value={allocData.allocation_date}
-                                error={errors.allocation_date}
+                                error={allocErrors.allocation_date}
                                 icon={CalendarDaysIcon}
                                 onChange={(value) => setAllocData('allocation_date', value)}
                             />
 
-                            <TextInput type="number" value={allocData.quantity} onChange={(e) => setAllocData('quantity', e.target.value)} placeholder="Jumlah" required />
+                            <TextInput
+                                type="number"
+                                value={allocData.quantity}
+                                onChange={(e) => setAllocData('quantity', e.target.value)}
+                                placeholder="Jumlah"
+                                required
+                            />
 
                             <button
                                 type="submit"
@@ -236,7 +281,11 @@ export default function Show({ batch, growingUnits = [] }) {
                                 <span>
                                     {alloc.growing_unit?.unit_code} - {alloc.growing_unit?.unit_name} - {alloc.quantity} tanaman sejak {formatDate(alloc.allocation_date)}
                                 </span>
-                                <button onClick={() => handleDeleteAllocation(alloc.id)} className="text-red-600 dark:text-red-300">
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteAllocation(alloc.id)}
+                                    className="text-red-600 dark:text-red-300"
+                                >
                                     <TrashIcon className="h-4 w-4" />
                                 </button>
                             </ListItem>
@@ -256,31 +305,53 @@ export default function Show({ batch, growingUnits = [] }) {
                 >
                     {showMovementForm && (
                         <form onSubmit={handleAddMovement} className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <SelectInput value={moveData.from_unit_id} onChange={(e) => setMoveData('from_unit_id', e.target.value)}>
+                            <SelectInput
+                                value={moveData.from_unit_id}
+                                onChange={(e) => setMoveData('from_unit_id', e.target.value)}
+                            >
                                 <option value="">Dari Bedengan</option>
                                 {growingUnits.map((unit) => (
-                                    <option key={unit.id} value={unit.id}>{unit.unit_code} - {unit.unit_name}</option>
+                                    <option key={unit.id} value={unit.id}>
+                                        {unit.unit_code} - {unit.unit_name}
+                                    </option>
                                 ))}
                             </SelectInput>
 
-                            <SelectInput value={moveData.to_unit_id} onChange={(e) => setMoveData('to_unit_id', e.target.value)} required>
+                            <SelectInput
+                                value={moveData.to_unit_id}
+                                onChange={(e) => setMoveData('to_unit_id', e.target.value)}
+                                required
+                            >
                                 <option value="">Ke Bedengan</option>
                                 {growingUnits.map((unit) => (
-                                    <option key={unit.id} value={unit.id}>{unit.unit_code} - {unit.unit_name}</option>
+                                    <option key={unit.id} value={unit.id}>
+                                        {unit.unit_code} - {unit.unit_name}
+                                    </option>
                                 ))}
                             </SelectInput>
 
-                            <TextInput type="number" value={moveData.quantity} onChange={(e) => setMoveData('quantity', e.target.value)} placeholder="Jumlah" required />
+                            <TextInput
+                                type="number"
+                                value={moveData.quantity}
+                                onChange={(e) => setMoveData('quantity', e.target.value)}
+                                placeholder="Jumlah"
+                                required
+                            />
 
                             <FormDatePicker
                                 id="movement_date"
                                 value={moveData.movement_date}
-                                error={errors.movement_date}
+                                error={moveErrors.movement_date}
                                 icon={CalendarDaysIcon}
-                                onChange={(value) => setMoveData('expected_harvest_date', value)}
+                                onChange={(value) => setMoveData('movement_date', value)}
                             />
 
-                            <TextInput value={moveData.notes} onChange={(e) => setMoveData('notes', e.target.value)} placeholder="Catatan" className="sm:col-span-2" />
+                            <TextInput
+                                value={moveData.notes}
+                                onChange={(e) => setMoveData('notes', e.target.value)}
+                                placeholder="Catatan"
+                                className="sm:col-span-2"
+                            />
 
                             <button
                                 type="submit"
@@ -319,7 +390,11 @@ export default function Show({ batch, growingUnits = [] }) {
                         {batch.stage_logs?.map((log) => (
                             <ListItem key={log.id}>
                                 {formatDate(log.change_date)}: {stageLabels[log.from_stage]} → {stageLabels[log.to_stage]}
-                                {log.reason && <span className="italic text-gray-400 dark:text-green-200"> ({log.reason})</span>}
+                                {log.reason && (
+                                    <span className="italic text-gray-400 dark:text-green-200">
+                                        {' '}({log.reason})
+                                    </span>
+                                )}
                             </ListItem>
                         ))}
                     </ListWrapper>
@@ -330,23 +405,120 @@ export default function Show({ batch, growingUnits = [] }) {
                     description="Catatan aktivitas perawatan yang dilakukan pada batch."
                     icon={BeakerIcon}
                     action={
-                        <Link
-                            href={route('maintenance.create', { planting_batch_id: batch.id })}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 text-white shadow-sm transition hover:bg-green-800"
-                        >
+                        <IconButton onClick={() => setShowMaintenanceForm(!showMaintenanceForm)}>
                             <PlusIcon className="h-5 w-5" />
-                        </Link>
+                        </IconButton>
                     }
                 >
-                    <ListWrapper empty={!batch.maintenance_activities || batch.maintenance_activities.length === 0} emptyText="Belum ada catatan perawatan">
+                    {showMaintenanceForm && (
+                        <form
+                            onSubmit={handleAddMaintenance}
+                            className="mb-5 rounded-3xl border border-green-100 bg-green-50 p-5 dark:border-white/10 dark:bg-[#0B2A1E]"
+                        >
+                            <div className="mb-5 flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-green-700 dark:bg-white/10 dark:text-lime-400">
+                                    <BeakerIcon className="h-5 w-5" />
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-green-950 dark:text-white">
+                                        Tambah Perawatan
+                                    </h4>
+                                    <p className="text-sm text-gray-500 dark:text-green-100">
+                                        Simpan catatan perawatan tanpa keluar dari detail batch.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                                <div className="lg:col-span-3">
+                                    <InlineLabel icon={SparklesIcon} label="Jenis Perawatan" />
+                                    <SelectInput
+                                        value={maintenanceData.activity_type}
+                                        onChange={(e) => setMaintenanceData('activity_type', e.target.value)}
+                                        required
+                                        className="w-full"
+                                    >
+                                        {Object.entries(activityLabels).map(([value, label]) => (
+                                            <option key={value} value={value}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </SelectInput>
+                                    <InlineError message={maintenanceErrors.activity_type} />
+                                </div>
+
+                                <div className="lg:col-span-3">
+                                    <InlineLabel icon={CalendarDaysIcon} label="Tanggal" />
+                                    <FormDatePicker
+                                        id="maintenance_activity_date"
+                                        value={maintenanceData.activity_date}
+                                        error={maintenanceErrors.activity_date}
+                                        icon={CalendarDaysIcon}
+                                        onChange={(value) => setMaintenanceData('activity_date', value)}
+                                    />
+                                </div>
+
+                                <div className="lg:col-span-2">
+                                    <InlineLabel icon={BanknotesIcon} label="Biaya" />
+                                    <TextInput
+                                        type="number"
+                                        step="1"
+                                        value={maintenanceData.cost}
+                                        onChange={(e) => setMaintenanceData('cost', e.target.value)}
+                                        placeholder="0"
+                                        className="w-full"
+                                    />
+                                    <InlineError message={maintenanceErrors.cost} />
+                                </div>
+
+                                <div className="lg:col-span-4">
+                                    <InlineLabel icon={DocumentTextIcon} label="Deskripsi" />
+                                    <TextInput
+                                        value={maintenanceData.description}
+                                        onChange={(e) => setMaintenanceData('description', e.target.value)}
+                                        placeholder="Contoh: Pupuk NPK 500g"
+                                        required
+                                        className="w-full"
+                                    />
+                                    <InlineError message={maintenanceErrors.description} />
+                                </div>
+
+                                <div className="flex flex-col gap-3 lg:col-span-12 sm:flex-row sm:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMaintenanceForm(false)}
+                                        className="rounded-2xl border border-green-100 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50 dark:border-white/10 dark:bg-white/10 dark:text-green-100 dark:hover:bg-white/20"
+                                    >
+                                        Batal
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        disabled={maintenanceProcessing}
+                                        className="rounded-2xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:opacity-70"
+                                    >
+                                        {maintenanceProcessing ? 'Menyimpan...' : 'Simpan Perawatan'}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    )}
+
+                    <ListWrapper
+                        empty={!batch.maintenance_activities || batch.maintenance_activities.length === 0}
+                        emptyText="Belum ada catatan perawatan"
+                    >
                         {batch.maintenance_activities?.map((act) => (
                             <ListItem key={act.id}>
-                                {formatDate(act.activity_date)} - {activityLabels[act.activity_type] || act.activity_type}: {act.description}
-                                {act.cost > 0 && (
-                                    <span className="ml-2 text-gray-500 dark:text-green-100">
-                                        (Rp {formatNumber(act.cost)})
-                                    </span>
-                                )}
+                                <span>
+                                    {formatDate(act.activity_date)} - {activityLabels[act.activity_type] || act.activity_type}: {act.description}
+                                    {act.cost > 0 && (
+                                        <span className="ml-2 text-gray-500 dark:text-green-100">
+                                            (Rp {formatNumber(act.cost)})
+                                        </span>
+                                    )}
+                                </span>
                             </ListItem>
                         ))}
                     </ListWrapper>
@@ -440,5 +612,24 @@ function SelectInput({ children, className = '', ...props }) {
         >
             {children}
         </select>
+    );
+}
+
+function InlineLabel({ icon: Icon, label }) {
+    return (
+        <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-green-950 dark:text-green-50">
+            <Icon className="h-4 w-4 text-green-700 dark:text-lime-400" />
+            {label}
+        </label>
+    );
+}
+
+function InlineError({ message }) {
+    if (!message) return null;
+
+    return (
+        <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-300">
+            {message}
+        </p>
     );
 }
