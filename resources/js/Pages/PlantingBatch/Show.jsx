@@ -205,7 +205,7 @@ export default function Show({ batch, growingUnits = [] }) {
                                 <option value="">Pilih Bedengan</option>
                                 {growingUnits.map((unit) => (
                                     <option key={unit.id} value={unit.id}>
-                                        {unit.unit_name} (Kapasitas {unit.capacity})
+                                        {unit.unit_code} {unit.unit_name} (Kapasitas {unit.capacity})
                                     </option>
                                 ))}
                             </SelectInput>
