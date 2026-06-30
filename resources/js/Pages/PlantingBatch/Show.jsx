@@ -234,7 +234,7 @@ export default function Show({ batch, growingUnits = [] }) {
                         {batch.allocations?.map((alloc) => (
                             <ListItem key={alloc.id}>
                                 <span>
-                                    {alloc.growing_unit?.unit_name} - {alloc.quantity} tanaman sejak {formatDate(alloc.allocation_date)}
+                                    {alloc.growing_unit?.unit_code} - {alloc.growing_unit?.unit_name} - {alloc.quantity} tanaman sejak {formatDate(alloc.allocation_date)}
                                 </span>
                                 <button onClick={() => handleDeleteAllocation(alloc.id)} className="text-red-600 dark:text-red-300">
                                     <TrashIcon className="h-4 w-4" />
